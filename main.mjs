@@ -1,5 +1,6 @@
 /**
  * @file index.js
+ * The entry point for the WebWars server.
  * Starts the HTTP server that runs the game and serves assets.
  */
 

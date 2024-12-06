@@ -2,13 +2,14 @@
     "name": "webwars",
     "version": "1.0.0",
     "description": "Web-based implementation of a moddable Advance Wars engine",
-    "main": "main.js",
+    "private": true,
     "type": "module",
     "imports": {
         "#src/*.mjs": "./src/*.mjs"
     },
     "scripts": {
-        "start": "node main.js",
+        "build": "npx webpack && node clean-up-build.js",
+        "start": "node main.mjs",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
@@ -24,6 +25,11 @@
     "dependencies": {
         "command-line-args": "^6.0.1",
         "command-line-usage": "^7.0.3",
-        "express": "^4.21.2"
+        "express": "^4.21.2",
+        "phaser": "^3.87.0"
+    },
+    "devDependencies": {
+        "webpack": "^5.97.1",
+        "webpack-cli": "^5.1.4"
     }
 }
