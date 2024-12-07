@@ -3,6 +3,23 @@
  * The entry point for a WebWars client.
  */
 
+// React testing.
+
+function Counter() {
+    const [count, setCount] = React.useState(0);
+    return (
+        <>
+            <h1>{count}</h1>
+            <button onClick={() => setCount(count + 1)}>Increment</button>
+        </>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<Counter />);
+
+// Phaser testing.
+
 class Example extends Phaser.Scene {
     preload() {
         this.load.setBaseURL("https://labs.phaser.io");

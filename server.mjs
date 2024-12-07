@@ -10,13 +10,12 @@ import getCommandLineArguments from "#src/commandLineArguments.mjs";
 
 const options = getCommandLineArguments();
 const app = express();
-const clientRoot = join(import.meta.dirname, "public");
 
 // This will give access to the public folder, and will refuse to serve any file outside of it.
-app.use(express.static(clientRoot));
+app.use(express.static(join(import.meta.dirname, "public")));
 
 app.get("/", function (req, res) {
-    res.sendFile("WebWars.html", { root: clientRoot });
+    res.sendFile("WebWars.html", { root: import.meta.dirname });
 });
 
 app.listen(options.port, function () {
