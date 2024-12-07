@@ -5,12 +5,45 @@
 
 // React testing.
 
+i18next.use(ReactI18next.initReactI18next).init({
+    fallbackLng: "en",
+    debug: true,
+    resources: {
+        en: {
+            translation: {
+                increment: "Increment (+ 1)",
+                lang: "Deutsch",
+            },
+        },
+        de: {
+            translation: {
+                increment: "Inkrement (+ 1)",
+                lang: "English",
+            },
+        },
+    },
+});
+
+// Use of ReactI18next.Trans should also be possible!
+
 function Counter() {
+    const { t, i18n } = ReactI18next.useTranslation();
     const [count, setCount] = React.useState(0);
     return (
         <>
             <h1 style={{ color: "white" }}>{count}</h1>
-            <button onClick={() => setCount(count + 1)}>Increment</button>
+            <button onClick={() => setCount(count + 1)}>{t("increment")}</button>
+            <button
+                onClick={() => {
+                    let newLang = "de";
+                    if (i18n.language == "de") {
+                        newLang = "en";
+                    }
+                    i18n.changeLanguage(newLang);
+                }}
+            >
+                {t("lang")}
+            </button>
         </>
     );
 }
