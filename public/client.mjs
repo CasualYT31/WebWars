@@ -9,7 +9,7 @@ function Counter() {
     const [count, setCount] = React.useState(0);
     return (
         <>
-            <h1>{count}</h1>
+            <h1 style={{ color: "white" }}>{count}</h1>
             <button onClick={() => setCount(count + 1)}>Increment</button>
         </>
     );
@@ -50,8 +50,15 @@ class Example extends Phaser.Scene {
 
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: 1920,
+    height: 1080,
+    // Credit where it's due: https://stackoverflow.com/a/60216568.
+    scale: {
+        // Fit to window.
+        mode: Phaser.Scale.FIT,
+        // Center vertically and horizontally.
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
     scene: Example,
     physics: {
         default: "arcade",
@@ -62,3 +69,15 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
+/**
+ * Whenever the Phaser canvas resizes, we need to resize the React UI layer to match it.
+ */
+game.renderer.onResize = function () {
+    const reactRoot = document.getElementById("root");
+    const phaserCanvas = document.querySelector("canvas");
+    reactRoot.style.width = phaserCanvas.style.width;
+    reactRoot.style.height = phaserCanvas.style.height;
+    reactRoot.style.marginLeft = phaserCanvas.style.marginLeft;
+    reactRoot.style.marginTop = phaserCanvas.style.marginTop;
+};

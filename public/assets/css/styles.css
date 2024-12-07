@@ -1,0 +1,17 @@
+/* Somehow, browsers still display a scrollbar, even though the Phaser canvas fits perfectly.
+   And they like to add a margin around the body. Get rid of them both. */
+body {
+    margin: 0;
+    overflow: hidden;
+    /* Credit: https://stackoverflow.com/a/27939180. */
+    background-image: url("/assets/images/background.png");
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+/* Ensures that the React UI layer sits on top of the Phaser canvas.
+   Without this, the UI layer will push the canvas down the page. */
+#root {
+    position: fixed;
+}
