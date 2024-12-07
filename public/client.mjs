@@ -5,23 +5,9 @@
 
 // React testing.
 
-i18next.use(ReactI18next.initReactI18next).init({
+i18next.use(i18nextHttpBackend).use(ReactI18next.initReactI18next).init({
     fallbackLng: "en",
     debug: true,
-    resources: {
-        en: {
-            translation: {
-                increment: "Increment (+ 1)",
-                lang: "Deutsch",
-            },
-        },
-        de: {
-            translation: {
-                increment: "Inkrement (+ 1)",
-                lang: "English",
-            },
-        },
-    },
 });
 
 // Use of ReactI18next.Trans should also be possible!
