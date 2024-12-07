@@ -8,7 +8,7 @@ import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
 import { logLevels, defaultLogLevel, setLogLevel, setLogFilepath } from "#src/logger.mjs";
 
-const optionDefinitions = [
+export const optionDefinitions = [
     // MARK: Generic
     {
         name: "help",

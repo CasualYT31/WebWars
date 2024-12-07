@@ -9,7 +9,7 @@
     },
     "scripts": {
         "start": "node server.mjs",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js test"
     },
     "repository": {
         "type": "git",
@@ -26,5 +26,9 @@
         "command-line-usage": "^7.0.3",
         "express": "^4.21.2",
         "pino": "^9.5.0"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "jest-cli": "^29.7.0"
     }
 }
