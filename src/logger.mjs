@@ -32,7 +32,7 @@ export function newLogger(name) {
         {
             name: name,
             level: logLevel,
-            nestedKey: "data",
+            nestedKey: "msg",
         },
         pino.multistream(streams)
     );
@@ -41,6 +41,32 @@ export function newLogger(name) {
     loggerObject.err = msg => {
         const stacktrace = new Error().stack;
         return loggerObject.error(`${msg}${stacktrace.substring(stacktrace.indexOf("\n", 8))}`);
+    };
+    /**
+     * Method that the game should use to write log entires.
+     * I wrote this method because the existing methods don't seem to output multiple objects if given, so I decided to
+     * write them as an array directly instead, if more than a message is given. I also wanted a way to automatically
+     * attach a stacktrace to error logs.
+     * @param {String} lvl The level to log at.
+     * @param {String} message The message should come first.
+     * @param {...any} objs The objects to log with the message.
+     */
+    loggerObject.log = (lvl, message, ...objs) => {
+        objs.unshift(message);
+        if (logLevels.findIndex(logLevel => logLevel == lvl) <= logLevels.findIndex(logLevel => logLevel == "error")) {
+            // If it's likely the user's already given an error object, convert it (everything gets dropped if you try
+            // to serialize it directly to the logs, I need serializers for non-POD types but I cba with that for now).
+            const e = objs.findIndex(obj => obj && obj.stack && obj.toString);
+            if (e >= 0) {
+                objs[e] = objs[e].toString() + "\n" + objs[e].stack;
+            }
+            const stacktrace = new Error().stack;
+            objs.push(stacktrace.substring(stacktrace.indexOf("\n", 8) + 5));
+        }
+        if (objs.length == 1) {
+            return loggerObject[lvl](objs.at(0));
+        }
+        return loggerObject[lvl](objs);
     };
     return loggerObject;
 }

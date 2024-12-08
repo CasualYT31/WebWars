@@ -3,100 +3,64 @@
  * The entry point for a WebWars client.
  */
 
-// React testing.
+import { ClientMessageType, ServerMessageType, sendMessage, isValidSessionKey } from "./shared/protocol.mjs";
+import { getSessionKey, setSessionKey } from "./src/ws/sessionKey.mjs";
+import testing from "./testing.mjs";
 
-i18next.use(i18nextHttpBackend).use(ReactI18next.initReactI18next).init({
-    fallbackLng: "en",
-    debug: true,
-});
-
-// Use of ReactI18next.Trans should also be possible!
-
-function Counter() {
-    const { t, i18n } = ReactI18next.useTranslation();
-    const [count, setCount] = React.useState(0);
-    return (
-        <>
-            <h1 style={{ color: "white" }}>{count}</h1>
-            <button onClick={() => setCount(count + 1)}>{t("increment")}</button>
-            <button
-                onClick={() => {
-                    let newLang = "de";
-                    if (i18n.language == "de") {
-                        newLang = "en";
-                    }
-                    i18n.changeLanguage(newLang);
-                }}
-            >
-                {t("lang")}
-            </button>
-        </>
-    );
-}
-
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<Counter />);
-
-// Phaser testing.
-
-class Example extends Phaser.Scene {
-    preload() {
-        this.load.setBaseURL("https://labs.phaser.io");
-
-        this.load.image("sky", "assets/skies/space3.png");
-        this.load.image("logo", "assets/sprites/phaser3-logo.png");
-        this.load.image("red", "assets/particles/red.png");
-    }
-
-    create() {
-        this.add.image(400, 300, "sky");
-
-        const particles = this.add.particles(0, 0, "red", {
-            speed: 100,
-            scale: { start: 1, end: 0 },
-            blendMode: "ADD",
-        });
-
-        const logo = this.physics.add.image(400, 100, "logo");
-
-        logo.setVelocity(100, 200);
-        logo.setBounce(1, 1);
-        logo.setCollideWorldBounds(true);
-
-        particles.startFollow(logo);
-    }
-}
-
-const config = {
-    type: Phaser.AUTO,
-    width: 1920,
-    height: 1080,
-    // Credit where it's due: https://stackoverflow.com/a/60216568.
-    scale: {
-        // Fit to window.
-        mode: Phaser.Scale.FIT,
-        // Center vertically and horizontally.
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-    },
-    scene: Example,
-    physics: {
-        default: "arcade",
-        arcade: {
-            gravity: { y: 200 },
-        },
-    },
-};
-
-const game = new Phaser.Game(config);
+const ws = new WebSocket(`ws://${location.host}/`);
 
 /**
- * Whenever the Phaser canvas resizes, we need to resize the React UI layer to match it.
+ * Once the connection has been established, the client tries to verify itself with the server.
+ * @param {Event} ev The OnOpen event.
  */
-game.renderer.onResize = function () {
-    const reactRoot = document.getElementById("root");
-    const phaserCanvas = document.querySelector("canvas");
-    reactRoot.style.width = phaserCanvas.style.width;
-    reactRoot.style.height = phaserCanvas.style.height;
-    reactRoot.style.marginLeft = phaserCanvas.style.marginLeft;
-    reactRoot.style.marginTop = phaserCanvas.style.marginTop;
+ws.onopen = ev => {
+    console.log("The client has connected with the server.", ev);
+    const sessionKey = getSessionKey();
+    if (sessionKey) {
+        console.log(`Attempting to verify with the server using session key: ${sessionKey}.`);
+    } else {
+        console.log("The client does not have a session key saved, will request a new one from the server.");
+    }
+    sendMessage(ws, ClientMessageType.Verify, sessionKey);
+};
+
+/**
+ * When the server sends a message to the client, it should be acted upon.
+ * @param {Event} ev The OnMessage event.
+ */
+ws.onmessage = ev => {
+    console.trace("The client has received a message from the server.", ev);
+    const decodedMessage = JSON.parse(ev.data);
+    console.trace("The client has decoded a message from the server.", decodedMessage);
+    switch (decodedMessage.type) {
+        case ServerMessageType.Acknowledgement:
+            const newSessionKey = decodedMessage.sessionKey;
+            if (isValidSessionKey(newSessionKey)) {
+                console.debug(`The client has received the session key from the server: ${newSessionKey}.`);
+                setSessionKey(newSessionKey);
+                // TODO: WEB-3: Opening up the rest of the game should be handled via the MVC/MVVM framework.
+                testing();
+            } else {
+                console.error(`Invalid session key received from the server: ${newSessionKey}!`);
+            }
+            break;
+        default:
+            console.error(`Unrecognized server message type ${decodedMessage.type}!`);
+    }
+};
+
+/**
+ * Log when errors occur with the WebSocket.
+ * @param {Event} ev The OnError event.
+ */
+ws.onerror = ev => {
+    console.error("The WebSocket connection with the server has encountered an error!", ev);
+};
+
+/**
+ * Log when the WebSocket connection has been closed.
+ * @param {Event} ev The OnClose event.
+ */
+ws.onclose = ev => {
+    console.warn("The WebSocket connection with the server has been closed!", ev);
 };
