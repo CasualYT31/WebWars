@@ -33,6 +33,7 @@ export function newLogger(name) {
             name: name,
             level: logLevel,
             nestedKey: "msg",
+            base: undefined,
         },
         pino.multistream(streams)
     );
