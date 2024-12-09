@@ -6,7 +6,7 @@
 
 import { join } from "node:path";
 
-import Controller from "#src/controller/controller.mjs";
+import Controller from "#src/mvc/controller.mjs";
 import getCommandLineArguments from "#src/commandLineArguments.mjs";
 
 const options = getCommandLineArguments();
@@ -25,4 +25,5 @@ const controller = new Controller({
             url: "/",
         },
     ],
+    onServerUp: port => console.log(`Open http://localhost:${port} in your browser to open the game!`),
 });
