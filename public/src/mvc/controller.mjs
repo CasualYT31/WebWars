@@ -11,6 +11,12 @@ import Model from "./model.mjs";
  * Manages the web socket connection between the client and the server.
  */
 class Controller {
+    /// The dimensions of the Phaser canvas.
+    canvas = Object.freeze({
+        width: 1280,
+        height: 720,
+    });
+
     /**
      * Create a new web socket connection and attempt to connect to the server.
      */
@@ -23,10 +29,10 @@ class Controller {
             debug: true,
         });
         // Set up Phaser and React's root element.
-        new Phaser.Game({
+        this.#phaserGame = new Phaser.Game({
             type: Phaser.AUTO,
-            width: 1280,
-            height: 720,
+            width: this.canvas.width,
+            height: this.canvas.height,
             // Credit where it's due: https://stackoverflow.com/a/60216568.
             scale: {
                 // Fit to window.
@@ -56,7 +62,7 @@ class Controller {
         );
     }
 
-    // MARK: Public API
+    // MARK: Server API
 
     /**
      * Retrieves a reference to the given model's read-only data.
@@ -107,6 +113,17 @@ class Controller {
                 data: data,
             });
         }
+    }
+
+    // MARK: Front-end API
+
+    /**
+     * Sets the background image to use for the menu scene.
+     * @param {String} imageUrl The URL to the image to set to the background.
+     */
+    setBackground(imageUrl) {
+        console.trace("Setting background image of the menu scene", imageUrl);
+        this.#phaserGame.scene.getAt(0).setImage(imageUrl);
     }
 
     // MARK: Web Socket Handling
@@ -311,6 +328,7 @@ class Controller {
         sceneHandlers: {},
     };
     #reactRoot = null;
+    #phaserGame = null;
 }
 
 /**

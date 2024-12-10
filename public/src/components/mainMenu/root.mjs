@@ -6,6 +6,8 @@
 import controller from "/src/mvc/controller.mjs";
 
 export default function MainMenu() {
+    let image = "assets/images/background.jpg";
+    controller.setBackground(image);
     const { t, i18n } = ReactI18next.useTranslation();
     const [count, setCount] = React.useState(0);
     return React.createElement(
@@ -25,6 +27,20 @@ export default function MainMenu() {
                 },
             },
             t("lang")
+        ),
+        React.createElement(
+            "button",
+            {
+                onClick: () => {
+                    if (image == "assets/images/background.jpg") {
+                        image = "assets/images/background.png";
+                    } else {
+                        image = "assets/images/background.jpg";
+                    }
+                    controller.setBackground(image);
+                },
+            },
+            "Image"
         )
     );
 }
