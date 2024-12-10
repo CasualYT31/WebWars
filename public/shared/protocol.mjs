@@ -40,7 +40,7 @@ export function sendMessage(ws, type, payload = {}) {
 /**
  * The regex for a valid session key.
  */
-export const sessionKeyRegex = /^[0-9a-f]{16}$/g;
+export const sessionKeyRegex = /^[0-9a-f]{16}$/;
 
 /**
  * Test if a given variable could contain a valid session key.

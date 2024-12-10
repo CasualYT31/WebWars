@@ -16,16 +16,7 @@ class Controller {
      */
     constructor() {
         // Set up the web socket connection.
-        if (this.#sessionKey) {
-            console.log(`Attempting to verify with the server using session key: ${this.#sessionKey}`);
-        } else {
-            console.log("The client does not have a session key saved, will request a new one from the server");
-        }
-        this.#ws = new WebSocket(`ws://${location.host}/${this.#sessionKey}`);
-        this.#ws.onopen = ev => this.#onConnected(ev);
-        this.#ws.onmessage = ev => this.#onServerMessage(ev);
-        this.#ws.onerror = ev => this.#onError(ev);
-        this.#ws.onclose = ev => this.#onClose(ev);
+        this.#attemptToConnectToServer();
         // Set up I18Next.
         i18next.use(i18nextHttpBackend).use(ReactI18next.initReactI18next).init({
             fallbackLng: "en",
@@ -113,17 +104,33 @@ class Controller {
      * @param {...any} data The parameters to send with the command.
      */
     command(name, ...data) {
-        console.trace(`Sending command "${name}"`, data);
-        sendMessage(this.#ws, ClientMessageType.Command, {
-            name: name,
-            data: data,
-        });
+        if (this.#ws.readyState === WebSocket.OPEN) {
+            console.trace(`Sending command "${name}"`, data);
+            sendMessage(this.#ws, ClientMessageType.Command, {
+                name: name,
+                data: data,
+            });
+        }
     }
 
     // MARK: Web Socket Handling
 
+    #attemptToConnectToServer() {
+        if (this.#sessionKey) {
+            console.log(`Attempting to verify with the server using session key: ${this.#sessionKey}`);
+        } else {
+            console.log("The client does not have a session key saved, will request a new one from the server");
+        }
+        this.#ws = new WebSocket(`ws://${location.host}/${this.#sessionKey}`);
+        this.#ws.onopen = ev => this.#onConnected(ev);
+        this.#ws.onmessage = ev => this.#onServerMessage(ev);
+        this.#ws.onerror = ev => this.#onError(ev);
+        this.#ws.onclose = ev => this.#onDisconnected(ev);
+    }
+
     #onConnected(ev) {
         console.log("The client has connected with the server", ev);
+        document.getElementById("disconnectedOverlay").style.visibility = "hidden";
     }
 
     #onServerMessage(ev) {
@@ -144,7 +151,7 @@ class Controller {
                     this.#serverVerified = true;
                     this.#updateModelsAndEmitEvents(decodedMessage.payload.data, ["onLoad", "onLanguageUpdated"]);
                 } else {
-                    console.error(`Invalid session key received from the server: ${newSessionKey}!`);
+                    console.error(`Invalid session key received from the server: "${newSessionKey}"!`);
                 }
                 break;
             case ServerMessageType.Data:
@@ -157,22 +164,36 @@ class Controller {
 
     #onError(ev) {
         console.error("The client has disconnected from the server due to an error", ev);
-        this.#onDisconnected();
     }
 
-    #onClose(ev) {
+    #onDisconnected(ev) {
         console.warn("The client has been disconnected from the server", ev);
-        this.#onDisconnected();
-    }
-
-    #onDisconnected() {
+        const overlay = document.getElementById("disconnectedOverlay");
+        const message = document.getElementById("disconnectedMessage");
+        overlay.style.visibility = "visible";
         if (this.#serverVerified) {
-            // TODO: Block user input and display Disconnected overlay.
+            let interval;
+            function reconnect(onReconnect) {
+                if (reconnect.countdown === undefined) {
+                    reconnect.countdown = 3;
+                } else {
+                    --reconnect.countdown;
+                }
+                message.innerText =
+                    "You are currently disconnected from the server\n\n" +
+                    `Will try to reconnect in ${reconnect.countdown} second${reconnect.countdown == 1 ? "" : "s"}...`;
+                if (reconnect.countdown <= 0) {
+                    clearInterval(interval);
+                    onReconnect();
+                }
+            }
+            reconnect();
+            interval = setInterval(() => reconnect(this.#attemptToConnectToServer.bind(this)), 1000);
         } else {
-            alert(
-                "You cannot have the game open in more than one browser tab. " +
-                    "Please close your old tab and refresh this tab to pick up where you left off."
-            );
+            message.innerText =
+                "You cannot have the game open in more than one browser tab.\n\n" +
+                "Please close your old tab and refresh this tab to pick up where " +
+                "you left off.";
         }
     }
 

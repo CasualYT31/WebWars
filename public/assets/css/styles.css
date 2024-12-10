@@ -15,3 +15,28 @@ body {
 #root {
     position: fixed;
 }
+
+#disconnectedOverlay {
+    visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+#disconnectedMessage {
+    text-align: center;
+    user-select: none;
+    font-family: "Calibri", sans-serif;
+    font-weight: bold;
+    border: 3px solid black;
+    border-radius: 8px;
+    background-color: antiquewhite;
+    padding: 24px 16px;
+}
