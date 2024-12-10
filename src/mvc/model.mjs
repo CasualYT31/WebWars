@@ -14,7 +14,7 @@
  *    passed in: e.g. `onUnitCreated(...data)`. You must not rely on event handlers to be invoked in a certain order.
  * 2. Public methods starting with `when` and then followed by a command name, e.g. `whenCreateUnit`, are categorized as
  *    command handlers. Whenever a client submits that command, that method will be invoked, and the command's arguments
- *    will be passed in: e.g. `whenCreateUnit(...unitOptions)`.
+ *    will be passed in: e.g. `whenCreateUnit(...unitOptions)`. Commands can return anything they wish.
  * There can be many event handlers, but there can only be one command handler throughout every model in a controller.
  * This is because you don't want two different models changing their state when a single command is submitted. This
  * usually implies that one of those models is "owned" by the other: either it should be encapsulated entirely within

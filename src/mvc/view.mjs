@@ -19,15 +19,22 @@ export default class View {
      * Creates a new client session with a unique session key.
      * @param {Controller} controller Reference to the controller that owns this view.
      * @param {WebSocket} ws The web socket connection associated with this client session.
-     * @param {Array<String>} existingSessionKeys The session keys that already exist according to the controller.
+     * @param {String} givenSessionKey The session key that the client gave on connection. Empty if they gave none.
      */
-    constructor(controller, ws, existingSessionKeys) {
+    constructor(controller, ws, givenSessionKey) {
         this.#controller = controller;
         let newSessionKey;
-        while (true) {
-            newSessionKey = new RandExp(sessionKeyRegex).gen();
-            if (existingSessionKeys.indexOf(newSessionKey) < 0) {
-                break;
+        if (this.#controller.command("ReplayPersistedSessionDataIfSessionKeyExists", givenSessionKey)) {
+            // This is a session key from a previous run, use the session key and accept the persisted data once the
+            // events arrive.
+            newSessionKey = givenSessionKey;
+        } else {
+            // This is a completely new client, generate a new session key.
+            while (true) {
+                newSessionKey = new RandExp(sessionKeyRegex).gen();
+                if (!this.#controller.doesSessionKeyExist(newSessionKey)) {
+                    break;
+                }
             }
         }
         this.#sessionKey = newSessionKey;
@@ -57,7 +64,7 @@ export default class View {
         // keys to some browser and/or hardware ID would make this a lot harder. Or we could use an account system, but
         // I don't foresee the server being run when all clients aren't actively playing. If this style of play is
         // desired (e.g. AWBW), another server should be responsible for this kind of security and scalability (it would
-        // manage instances of this server program, and there'd need to be multiple for each game in play).
+        // manage instances of this server program, and there'd need to be one for each game in play).
         if (this.isConnected()) {
             return false;
         }

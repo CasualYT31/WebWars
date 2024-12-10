@@ -58,11 +58,12 @@ export default class Controller {
      * Sends a command to the controller.
      * @param {String} name The name of the command. Must be in PascalCase.
      * @param {...any} data The data to send to the command.
+     * @returns {any} The value returned by the command.
      */
     command(name, ...data) {
         const indexedName = `when${name}`;
         this.#logger.log("trace", "Command:", indexedName, ...data);
-        this.#commandIndex[indexedName](...data);
+        return this.#commandIndex[indexedName](...data);
     }
 
     /**
@@ -92,6 +93,14 @@ export default class Controller {
      */
     getModel(name) {
         return this.#models[name];
+    }
+
+    /**
+     * Does a view with the given session key already exist?
+     * @param {String} key Session key to test.
+     */
+    doesSessionKeyExist(key) {
+        return Object.keys(this.#views).includes(key);
     }
 
     // MARK: Private
@@ -272,7 +281,7 @@ export default class Controller {
                 return;
             }
             this.#logger.log("info", "Creating new client session. Existing session keys:", existingSessionKeys);
-            const newView = new View(this, ws, existingSessionKeys);
+            const newView = new View(this, ws, sessionKey);
             sessionKey = newView.sessionKey;
             this.#views[sessionKey] = newView;
             this.#indexMethods(newView, true, false);

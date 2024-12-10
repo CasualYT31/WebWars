@@ -145,7 +145,7 @@ class Controller {
                 if (isValidSessionKey(newSessionKey)) {
                     console.debug(`The client has received the session key from the server: ${newSessionKey}`);
                     const d = new Date();
-                    d.setTime(d.getTime() + 86400000); // Expires in one day.
+                    d.setTime(d.getTime() + 34560000000); // Expires in 400 days, which is the default cap on cookies.
                     document.cookie =
                         `sessionKey=${newSessionKey}; expires=${d.toUTCString()}; ` +
                         `path=/; SameSite=None; Secure=None`;
