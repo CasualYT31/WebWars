@@ -35,12 +35,6 @@ class Controller {
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
             scene: MenuScene,
-            physics: {
-                default: "arcade",
-                arcade: {
-                    gravity: { y: 200 },
-                },
-            },
             parent: "root",
             dom: {
                 createContainer: true,
