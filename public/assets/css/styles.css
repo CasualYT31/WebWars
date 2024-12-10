@@ -10,12 +10,6 @@ body {
     background-size: cover;
 }
 
-/* Ensures that the React UI layer sits on top of the Phaser canvas.
-   Without this, the UI layer will push the canvas down the page. */
-#root {
-    position: fixed;
-}
-
 #disconnectedOverlay {
     visibility: hidden;
     display: flex;
