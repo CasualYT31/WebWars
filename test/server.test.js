@@ -1,4 +1,4 @@
-import { optionDefinitions } from "#src/commandLineArguments.mjs";
+import { optionDefinitions } from "../server.mjs";
 
 test("ensures defaults are in descriptions", () => {
     expect(

@@ -34,8 +34,16 @@ export default class Model {
     }
 
     /**
-     * Emits an event from this model and publishes it to every model attached to the controller.
-     * @param {String} name The name of the event to emit to every model.
+     * Models can request that some of their commands be given the sender's session key as their first argument.
+     * Since views are the only actors that can send commands, this request must always be respected. Subclasses can
+     * override this field with a list of names, one for each command that requires a session key argument. Do not
+     * prepend any command name with "when".
+     */
+    prependSessionKeyToCommands = [];
+
+    /**
+     * Emits an event from this model and publishes it to every model and view attached to the controller.
+     * @param {String} name The name of the event to emit to every model and view.
      * @param {...any} data The data to attached to the event.
      */
     event(name, ...data) {

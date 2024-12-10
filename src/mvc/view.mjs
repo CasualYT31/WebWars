@@ -6,12 +6,13 @@
 import RandExp from "randexp";
 
 import { ClientMessageType, sendMessage, ServerMessageType, sessionKeyRegex } from "#shared/protocol.mjs";
-import { newLogger } from "#src/logger.mjs";
+import { newLogger } from "#src/logging/logger.mjs";
 
 /**
  * Stores data pertaining to a single client session.
- * As with models, any public method starting with `on` is registered as an event handler, however, views can't register
- * commands.
+ * Views are essentially special models that are intended to store outgoing data. They can handle events, but cannot
+ * register commands. They have full access to the controller, which means they can submit commands, but by design they
+ * don't emit events.
  */
 export default class View {
     /**
@@ -36,6 +37,14 @@ export default class View {
     }
 
     /**
+     * Finds out if the client associated with this session is still connected to the server via web socket.
+     * @returns {Boolean} Is the client still connected to the server?
+     */
+    isConnected() {
+        return this.#ws && !this.#closed;
+    }
+
+    /**
      * Attempts to assign a new web socket connection to this view.
      * This view will reject the new web socket if its current one hasn't closed yet.
      * @param {WebSocket} ws The new web socket connection associated with this view.
@@ -49,7 +58,7 @@ export default class View {
         // I don't foresee the server being run when all clients aren't actively playing. If this style of play is
         // desired (e.g. AWBW), another server should be responsible for this kind of security and scalability (it would
         // manage instances of this server program, and there'd need to be multiple for each game in play).
-        if (this.#ws && !this.#closed) {
+        if (this.isConnected()) {
             return false;
         }
         this.#ws = ws;
@@ -66,9 +75,47 @@ export default class View {
             this.#logger.log("info", "Client has disconnected");
             this.#closed = true;
         });
-        sendMessage(this.#ws, ServerMessageType.Verified, { sessionKey: this.sessionKey });
+        // Apply any queued session data updates, but don't publish them. Instead, we publish the entirety of the
+        // session data with the verification message.
+        this.#applyQueuedSessionDataUpdates(false);
+        sendMessage(this.#ws, ServerMessageType.Verified, { sessionKey: this.sessionKey, data: this.#sessionData });
         return true;
     }
+
+    /**
+     * Applies any queued session data changes and publishes them to the client, if they're connected.
+     */
+    publishData() {
+        this.#applyQueuedSessionDataUpdates(true);
+    }
+
+    // MARK: Event handlers
+    // These handlers will convert server-side events into session data updates.
+
+    /**
+     * A client must open a new menu.
+     * @param {String} sessionKey The session key of the client that must open a new menu.
+     * @param {String} newComponent The path (relative to `public`) of the JS module script that exports the component
+     *                              to load.
+     */
+    onMenuOpened(sessionKey, newComponent) {
+        if (this.sessionKey === sessionKey) {
+            this.#queueSessionDataUpdate("ui", { componentModulePath: newComponent }, "onMenuOpened");
+        }
+    }
+
+    /**
+     * A client must change its language.
+     * @param {String} sessionKey The session key of the client whose language is changing.
+     * @param {String} newLanguage The I18Next key of the language to set.
+     */
+    onLanguageUpdated(sessionKey, newLanguage) {
+        if (this.sessionKey === sessionKey) {
+            this.#queueSessionDataUpdate("ui", { language: newLanguage }, "onLanguageUpdated");
+        }
+    }
+
+    // MARK: Private
 
     /**
      * The client message handler.
@@ -78,12 +125,68 @@ export default class View {
     #handleMessage(msg) {
         const decodedMessage = JSON.parse(msg);
         this.#logger.log("trace", "Client's message has been decoded:", decodedMessage);
-        switch (msg.type) {
+        switch (decodedMessage.type) {
             case ClientMessageType.Command:
-                this.#controller.command(msg.payload.name, ...msg.payload.data);
+                const commandName = decodedMessage.payload.name;
+                const commandArguments = decodedMessage.payload.data;
+                if (this.#controller.mustGiveSessionKeyWithCommand(commandName)) {
+                    commandArguments.unshift(this.sessionKey);
+                }
+                this.#controller.command(commandName, ...commandArguments);
                 break;
             default:
-                this.#logger.log("error", "Client sent a message of an unrecognized type:", msg.type);
+                this.#logger.log("error", "Client sent a message of an unrecognized type:", decodedMessage.type);
+        }
+    }
+
+    /**
+     * Queues a session data update.
+     * @param {String} partition Name of the partition (i.e. the front-end model) to update.
+     * @param {Object} updates The updates to apply to the partition.
+     * @param {String} event The server-side event that caused the update.
+     */
+    #queueSessionDataUpdate(partition, updates, event) {
+        this.#queuedSessionDataUpdates.push({
+            partition: partition,
+            updates: updates,
+            event: event,
+        });
+    }
+
+    /**
+     * Apply queued session data updates and clear the queue, optionally publishing the data updates.
+     */
+    #applyQueuedSessionDataUpdates(publish) {
+        // If the queue is empty, return early and don't publish any message.
+        if (this.#queuedSessionDataUpdates.length == 0) {
+            return;
+        }
+        let sessionDataUpdates = {};
+        let sessionDataEvents = new Set();
+        // For each queued update...
+        for (const sessionDataUpdate of this.#queuedSessionDataUpdates) {
+            const partition = sessionDataUpdate.partition;
+            const updates = sessionDataUpdate.updates;
+            const event = sessionDataUpdate.event;
+            // 1. add the update to the combined object to be sent to the client,
+            if (partition in sessionDataUpdates) {
+                sessionDataUpdates[partition] = { ...sessionDataUpdates[partition], ...updates };
+            } else {
+                sessionDataUpdates[partition] = updates;
+            }
+            // 2. apply the update to the server's copy of the session data
+            //    (NOTE: whenever you want to create a new front-end model, add it to #sessionData!),
+            this.#sessionData[partition] = { ...this.#sessionData[partition], ...updates };
+            // 3. and keep track of the events that caused the updates.
+            sessionDataEvents.add(event);
+        }
+        // Once we've collated every update, push them to the client, and clear the queue.
+        this.#queuedSessionDataUpdates = [];
+        if (publish && this.isConnected()) {
+            sendMessage(this.#ws, ServerMessageType.Data, {
+                data: sessionDataUpdates,
+                events: Array.from(sessionDataEvents),
+            });
         }
     }
 
@@ -95,4 +198,9 @@ export default class View {
     #ws = null;
     #closed = true;
     #controller = null;
+    #sessionData = {
+        /// Stores data on the UI of the client.
+        ui: {},
+    };
+    #queuedSessionDataUpdates = [];
 }

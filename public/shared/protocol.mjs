@@ -7,6 +7,7 @@
  * The types of message that can be sent from a client to the server.
  */
 export const ClientMessageType = {
+    /// The client asks the server to run a given command.
     Command: 1,
 };
 
@@ -14,7 +15,11 @@ export const ClientMessageType = {
  * The types of message that can be sent from the server to a client.
  */
 export const ServerMessageType = {
+    /// The server tells a client that it is verified and has the given session key.
+    /// The entirety of the client's session data is also pushed.
     Verified: 1,
+    /// The server pushes an update to the client's session data, and tells it what events to fire.
+    Data: 2,
 };
 
 /**

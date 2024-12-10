@@ -7,7 +7,7 @@
 import express from "express";
 import expressWs from "express-ws";
 
-import { newLogger } from "#src/logger.mjs";
+import { newLogger } from "#src/logging/logger.mjs";
 import View from "#src/mvc/view.mjs";
 
 /**
@@ -66,6 +66,15 @@ export default class Controller {
     }
 
     /**
+     * Find out if a command wants a session key as its first argument.
+     * @param {String} name The name of the command to test.
+     * @returns {Boolean} True if the command must be given a session key as the first argument, false if not.
+     */
+    mustGiveSessionKeyWithCommand(name) {
+        return this.#commandsToPrependWithSessionKeys.includes(name);
+    }
+
+    /**
      * Used by models to emit events to the rest of the system.
      * @param {String} name The name of the event. Must be in PascalCase.
      * @param {...any} data The data to attach to the event.
@@ -93,33 +102,36 @@ export default class Controller {
      */
     #dispatchEvents() {
         const eventQueueLength = this.#eventQueue.length;
-        if (eventQueueLength == 0) {
-            return;
-        }
-        this.#logger.log(
-            "trace",
-            `Dispatching ${eventQueueLength} event${eventQueueLength == 1 ? "" : "s"}:`,
-            ...this.#eventQueue
-        );
-        // Go through the fixed length of the event queue as we know it now so that if any more events are added during
-        // this loop, they won't be dispatched as part of this loop, mitigating against cyclical events causing infinite
-        // loops.
-        for (let i = 0; i < eventQueueLength; ++i) {
-            const ev = this.#eventQueue.at(i);
-            if (this.#eventIndex.hasOwnProperty(ev.at(0))) {
-                const handlerCount = this.#eventIndex[ev.at(0)].length;
-                this.#logger.log(
-                    "trace",
-                    `Dispatching event to ${handlerCount} handler${handlerCount == 1 ? "" : "s"}:`,
-                    ev.at(0),
-                    ...ev.at(1)
-                );
-                this.#eventIndex[ev.at(0)].forEach(handler => handler(...ev.at(1)));
+        if (eventQueueLength > 0) {
+            this.#logger.log(
+                "trace",
+                `Dispatching ${eventQueueLength} event${eventQueueLength == 1 ? "" : "s"}:`,
+                ...this.#eventQueue
+            );
+            // Go through the fixed length of the event queue as we know it now so that if any more events are added
+            // during this loop, they won't be dispatched as part of this loop, mitigating against cyclical events
+            // causing infinite loops.
+            for (let i = 0; i < eventQueueLength; ++i) {
+                const ev = this.#eventQueue.at(i);
+                if (this.#eventIndex.hasOwnProperty(ev.at(0))) {
+                    const handlerCount = this.#eventIndex[ev.at(0)].length;
+                    this.#logger.log(
+                        "trace",
+                        `Dispatching event to ${handlerCount} handler${handlerCount == 1 ? "" : "s"}:`,
+                        ev.at(0),
+                        ...ev.at(1)
+                    );
+                    this.#eventIndex[ev.at(0)].forEach(handler => handler(...ev.at(1)));
+                }
             }
+            // Any new events will always be appended to the end of the queue,
+            // so this will only get rid of events we've dispatched.
+            this.#eventQueue.splice(0, eventQueueLength);
         }
-        // Any new events will always be appended to the end of the queue,
-        // so this will only get rid of events we've dispatched.
-        this.#eventQueue.splice(0, eventQueueLength);
+        // Finally, loop through each client and publish any data changes they've encountered.
+        for (const sessionKey in this.#views) {
+            this.#views[sessionKey].publishData();
+        }
     }
 
     /**
@@ -133,6 +145,7 @@ export default class Controller {
             const model = new modelType(this);
             this.#models[modelType.name] = model;
             this.#indexMethods(model, true, true);
+            this.#commandsToPrependWithSessionKeys.push(...model.prependSessionKeyToCommands);
         }
     }
 
@@ -272,6 +285,7 @@ export default class Controller {
     #views = {};
     #models = {};
     #commandIndex = {};
+    #commandsToPrependWithSessionKeys = [];
     #eventIndex = {};
     #eventQueue = [];
     #eventDispatchingInterval = 0;
