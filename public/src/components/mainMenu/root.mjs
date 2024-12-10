@@ -5,9 +5,10 @@
 
 import controller from "/src/mvc/controller.mjs";
 
+let image = "assets/images/background.jpg";
+controller.setBackground(image);
+
 export default function MainMenu() {
-    let image = "assets/images/background.jpg";
-    controller.setBackground(image);
     const { t, i18n } = ReactI18next.useTranslation();
     const [count, setCount] = React.useState(0);
     return React.createElement(
