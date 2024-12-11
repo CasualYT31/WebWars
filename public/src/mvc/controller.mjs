@@ -24,10 +24,16 @@ class Controller {
         // Set up the web socket connection.
         this.#attemptToConnectToServer();
         // Set up I18Next.
-        i18next.use(i18nextHttpBackend).use(ReactI18next.initReactI18next).init({
-            fallbackLng: "en",
-            debug: true,
-        });
+        i18next
+            .use(i18nextHttpBackend)
+            .use(ReactI18next.initReactI18next)
+            .init({
+                backend: {
+                    loadPath: "/assets/locales/{{lng}}/{{ns}}.json",
+                },
+                fallbackLng: "en",
+                debug: true,
+            });
         // Set up Phaser and React's root element.
         this.#phaserGame = new Phaser.Game({
             type: Phaser.AUTO,
