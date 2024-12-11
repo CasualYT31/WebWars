@@ -69,6 +69,15 @@ export const optionDefinitions = [
             "instead. No log file will ever be deleted if --no-log-file is specified.",
         typeLabel: "",
     },
+    // MARK: Game
+    {
+        name: "map-pack",
+        alias: "m",
+        type: String,
+        defaultValue: "./default-map-pack",
+        description: "The path to the map pack to load on start-up (default: ./default-map-pack)",
+        typeLabel: "{underline folder path}",
+    },
 ];
 
 export const usageSections = [
@@ -111,17 +120,13 @@ if (esMain(import.meta)) {
         files: [
             {
                 path: "WebWars.html",
-                root: join(import.meta.dirname, "src", "public"),
+                root: join(import.meta.dirname, "public"),
                 url: "/",
             },
         ],
         folders: [
             {
-                path: join(import.meta.dirname, "src", "shared"),
-                url: "/",
-            },
-            {
-                path: join(import.meta.dirname, "src", "public"),
+                path: join(import.meta.dirname, "shared"),
                 url: "/",
             },
             {
