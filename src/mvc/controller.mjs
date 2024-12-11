@@ -177,7 +177,7 @@ export default class Controller {
                 }
             } else if (commands && methodName.startsWith("when")) {
                 if (this.#commandIndex.hasOwnProperty(methodName)) {
-                    throw new Error(`ASSERTION FAILED - tried to add a second command handler ${methodName}!`);
+                    this.#logger.log("error", `Tried to add a second command handler for ${methodName}!`);
                 } else {
                     this.#logger.log("trace", "Adding command to index:", methodName);
                     this.#commandIndex[methodName] = object[methodName].bind(object);
