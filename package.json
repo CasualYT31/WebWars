@@ -5,7 +5,7 @@
     "private": true,
     "type": "module",
     "imports": {
-        "#shared/*.mjs": "./public/shared/*.mjs",
+        "#shared/*.mjs": "./src/shared/*.mjs",
         "#src/*.mjs": "./src/*.mjs"
     },
     "scripts": {

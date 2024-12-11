@@ -3,7 +3,7 @@
  * Defines the menu scene.
  */
 
-import controller from "/src/mvc/controller.mjs";
+import controller from "/controller.mjs";
 
 /**
  * The menu scene consists of a single background image that can change.

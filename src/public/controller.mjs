@@ -3,9 +3,9 @@
  * The controller code for the client.
  */
 
-import { ClientMessageType, ServerMessageType, isValidSessionKey, sendMessage } from "../../shared/protocol.mjs";
-import MenuScene from "../scenes/menuScene.mjs";
-import Model from "./model.mjs";
+import { ClientMessageType, ServerMessageType, isValidSessionKey, sendMessage } from "/protocol.mjs";
+import MenuScene from "/menuScene.mjs";
+import Model from "/model.mjs";
 
 /**
  * Manages the web socket connection between the client and the server.
@@ -24,19 +24,12 @@ class Controller {
         // Set up the web socket connection.
         this.#attemptToConnectToServer();
         // Set up I18Next.
-        i18next
-            .use(i18nextHttpBackend)
-            .use(ReactI18next.initReactI18next)
-            .init({
-                backend: {
-                    loadPath: "/assets/locales/{{lng}}/{{ns}}.json",
-                },
-                fallbackLng: "en",
-                debug: true,
-            });
+        i18next.use(i18nextHttpBackend).use(ReactI18next.initReactI18next).init({
+            fallbackLng: "en",
+            debug: true,
+        });
         // Set up Phaser and React's root element.
         this.#phaserGame = new Phaser.Game({
-            type: Phaser.AUTO,
             width: this.canvas.width,
             height: this.canvas.height,
             // Credit where it's due: https://stackoverflow.com/a/60216568.
@@ -61,7 +54,6 @@ class Controller {
             },
         });
         // Register system handlers now (these are never cleared).
-        this.#addEventHandler("system", "onLoad", this.#initGame.bind(this));
         this.#addEventHandler("system", "onMenuOpened", this.#updateRootComponent.bind(this));
         this.#addEventHandler("system", "onLanguageUpdated", () =>
             i18next.changeLanguage(this.getModel("ui").language)
@@ -121,6 +113,14 @@ class Controller {
         }
     }
 
+    /**
+     * Gives direct access to the Phase 3 game object.
+     * @returns {Phaser.Game} The Phaser game.
+     */
+    get game() {
+        return this.#phaserGame;
+    }
+
     // MARK: Front-end API
 
     /**
@@ -129,7 +129,7 @@ class Controller {
      */
     setBackground(imageUrl) {
         console.trace("Setting background image of the menu scene", imageUrl);
-        this.#phaserGame.scene.getAt(0).setImage(imageUrl);
+        this.game.scene.getAt(0).setImage(imageUrl);
     }
 
     // MARK: Web Socket Handling
@@ -168,7 +168,7 @@ class Controller {
                         `path=/; SameSite=None; Secure=None`;
                     this.#sessionKey = newSessionKey;
                     this.#serverVerified = true;
-                    this.#updateModelsAndEmitEvents(decodedMessage.payload.data, ["onLoad", "onLanguageUpdated"]);
+                    this.#updateModelsAndEmitEvents(decodedMessage.payload.data, ["onMenuOpened", "onLanguageUpdated"]);
                 } else {
                     console.error(`Invalid session key received from the server: "${newSessionKey}"!`);
                 }
@@ -286,6 +286,13 @@ class Controller {
     #updateRootComponent() {
         // Dynamically import the new root component.
         const componentModulePath = this.getModel("ui").componentModulePath;
+        if (!componentModulePath) {
+            console.error(
+                `Attempting to set the root React component to "${componentModulePath}", which is invalid. Taking no ` +
+                    `action`
+            );
+            return;
+        }
         console.debug(`Updating root React component to "${componentModulePath}"`);
         import(componentModulePath)
             .then(componentModule => {
@@ -298,21 +305,6 @@ class Controller {
             .catch(reason => {
                 console.error(`Failed to update root React component to "${componentModulePath}"!`, reason);
             });
-    }
-
-    // MARK: Game Initialization
-
-    /**
-     * The client has now received its session data; load the game.
-     */
-    #initGame() {
-        // 1. Load the stored root component. If one is not stored, default to the main menu.
-        if (this.getModel("ui").componentModulePath) {
-            this.#updateRootComponent();
-        } else {
-            console.debug("There is no menu currently open! Opening the main menu");
-            this.command("OpenMenu", "/src/components/mainMenu/root.mjs");
-        }
     }
 
     // MARK: Data

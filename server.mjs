@@ -111,11 +111,19 @@ if (esMain(import.meta)) {
         files: [
             {
                 path: "WebWars.html",
-                root: import.meta.dirname,
+                root: join(import.meta.dirname, "src", "public"),
                 url: "/",
             },
         ],
         folders: [
+            {
+                path: join(import.meta.dirname, "src", "shared"),
+                url: "/",
+            },
+            {
+                path: join(import.meta.dirname, "src", "public"),
+                url: "/",
+            },
             {
                 path: join(import.meta.dirname, "public"),
                 url: "/",
