@@ -15,6 +15,7 @@ import { logLevels, defaultLogLevel, setLogLevel, setLogFilepath } from "#src/lo
 import Controller from "#src/mvc/controller.mjs";
 
 import FrontEndData from "#src/models/frontEndData.mjs";
+import MapManager from "#src/models/mapManager.mjs";
 
 export const optionDefinitions = [
     // MARK: Generic
@@ -115,7 +116,7 @@ export function getCommandLineArguments() {
 // Don't run the actual game if we're importing this module.
 if (esMain(import.meta)) {
     const options = getCommandLineArguments();
-    const controller = new Controller({
+    new Controller({
         port: options["port"],
         files: [
             {
@@ -135,6 +136,7 @@ if (esMain(import.meta)) {
             },
         ],
         onServerUp: port => console.log(`Open http://localhost:${port} in your browser to open the game!`),
-        models: new Set([FrontEndData]),
+        models: new Set([FrontEndData, MapManager]),
+        mapPackPath: options["map-pack"],
     });
 }

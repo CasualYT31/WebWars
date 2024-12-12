@@ -49,4 +49,22 @@ export default class Model {
     event(name, ...data) {
         this.#controller.event(name, ...data);
     }
+
+    /**
+     * Creates a new object that is given the ability to emit events to the controller.
+     * This is achieved by passing a frozen object as the first argument to the object's constructor. This object will
+     * contain a single function called "event" that has the same signature as Model.event. The new object can then
+     * store this frozen object and emit events whenever it likes.
+     * @param {Function} type The type of object to instantiate.
+     * @param {...any} params The parameters to pass to the object's constructor (after the "emitter" object).
+     * @returns {any} A new object of the given type.
+     */
+    newObjectWithEmitter(type, ...params) {
+        return new type(
+            Object.freeze({
+                event: (name, ...data) => this.#controller.event(name, ...data),
+            }),
+            ...params
+        );
+    }
 }

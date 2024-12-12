@@ -104,8 +104,13 @@ export default class FrontEndData extends Model {
      * @param {String} sessionKey The session key of the client who must open a new menu.
      * @param {String} newComponent The path (relative to `public`) of the JS module script that exports the component
      *                              to load.
+     * @param {Boolean} forceOpen If false, and the client's session data already has a menu open, don't open the given
+     *                            menu.
      */
-    whenOpenMenu(sessionKey, newComponent) {
+    whenOpenMenu(sessionKey, newComponent, forceOpen = true) {
+        if (!forceOpen && sessionKey in this.#frontEndData && "componentModulePath" in this.#frontEndData[sessionKey]) {
+            return;
+        }
         this.#setFrontEndData(sessionKey, "componentModulePath", newComponent);
     }
 

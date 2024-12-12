@@ -24,10 +24,16 @@ class Controller {
         // Set up the web socket connection.
         this.#attemptToConnectToServer();
         // Set up I18Next.
-        i18next.use(i18nextHttpBackend).use(ReactI18next.initReactI18next).init({
-            fallbackLng: "en",
-            debug: true,
-        });
+        i18next
+            .use(i18nextHttpBackend)
+            .use(ReactI18next.initReactI18next)
+            .init({
+                backend: {
+                    loadPath: "/pack/locales/{{lng}}/{{ns}}.json",
+                },
+                fallbackLng: "en",
+                debug: true,
+            });
         // Set up Phaser and React's root element.
         this.#phaserGame = new Phaser.Game({
             width: this.canvas.width,
@@ -110,6 +116,8 @@ class Controller {
                 name: name,
                 data: data,
             });
+        } else {
+            console.error(`Tried to send command "${name}" whilst disconnected from the server`, data);
         }
     }
 
@@ -168,7 +176,11 @@ class Controller {
                         `path=/; SameSite=None; Secure=None`;
                     this.#sessionKey = newSessionKey;
                     this.#serverVerified = true;
-                    this.#updateModelsAndEmitEvents(decodedMessage.payload.data, ["onMenuOpened", "onLanguageUpdated"]);
+                    this.#updateModelsAndEmitEvents(decodedMessage.payload.data, [
+                        "onConnected",
+                        "onMenuOpened",
+                        "onLanguageUpdated",
+                    ]);
                 } else {
                     console.error(`Invalid session key received from the server: "${newSessionKey}"!`);
                 }

@@ -4,10 +4,14 @@
  * Also responsible for spinning up the server.
  */
 
+import { cwd } from "node:process";
+import { join } from "node:path";
+
 import express from "express";
 import expressWs from "express-ws";
 
 import { newLogger } from "#src/logging/logger.mjs";
+import Model from "#src/mvc/model.mjs";
 import View from "#src/mvc/view.mjs";
 
 /**
@@ -33,11 +37,16 @@ export default class Controller {
      *                            Directly dictates how fast the game should run.
      * maxClientSessions {Number} (Default: 16) The maximum number of clients that can be connected to the server at a
      *                            time.
+     * mapPackPath {String} (Default: "") A path to a map pack to load with this server. It must be relative to the CWD.
      * @param {Object} options Configures the controller.
      */
     constructor(options) {
         this.#logger.log("trace", "Setting up with options:", options);
         this.#setupModels(options.models ?? new Set());
+        if (typeof options.mapPackPath === "string" && options.mapPackPath.length > 0) {
+            options.mapPackPath = join(cwd(), options.mapPackPath);
+            this.#loadMapPack(options.mapPackPath);
+        }
         if (!options.hasOwnProperty("noServer") || !Boolean(options.noServer)) {
             this.#setupServer(options);
         }
@@ -150,12 +159,31 @@ export default class Controller {
     #setupModels(modelTypes) {
         this.#logger.log("trace", "Setting up the models");
         for (const modelType of modelTypes) {
-            this.#logger.log("debug", "Setting up model:", modelType.name);
-            const model = new modelType(this);
-            this.#models[modelType.name] = model;
-            this.#indexMethods(model, true, true);
-            this.#commandsToPrependWithSessionKeys.push(...model.prependSessionKeyToCommands);
+            this.#addModel(modelType);
         }
+    }
+
+    /**
+     * Creates a new model and attaches its event handlers and commands.
+     * @param {Function} modelType The type of model to instantiate.
+     */
+    #addModel(modelType) {
+        // If modelType isn't a class type (or function), name will just resolve to `undefined`,
+        // so no need to include this in the error handler.
+        this.#logger.log("debug", "Adding model:", modelType.name);
+        let model;
+        try {
+            model = new modelType(this);
+            if (!model instanceof Model) {
+                throw new Error("The given model type did not inherit from the Model base class!");
+            }
+        } catch (e) {
+            this.#logger.log("error", "Failed to add model:", modelType.name, e);
+            return;
+        }
+        this.#models[modelType.name] = model;
+        this.#indexMethods(model, true, true);
+        this.#commandsToPrependWithSessionKeys.push(...model.prependSessionKeyToCommands);
     }
 
     /**
@@ -187,11 +215,60 @@ export default class Controller {
     }
 
     /**
+     * Asynchronously loads the given map pack.
+     * If the given map pack was valid, this method will emit a MapPackLoaded event after fully loading the pack. It
+     * will be emitted with the full path of the map pack attached as well as its exports.mjs module.
+     * @param {String} mapPackPath Path to the map pack to load.
+     */
+    #loadMapPack(mapPackPath) {
+        this.#logger.log("info", "Loading map pack:", mapPackPath);
+        // Try to load the given map pack's exports module.
+        // TODO: Is file:// only required on Windows?
+        import(`file://${join(mapPackPath, "exports.mjs")}`)
+            .then(mapPackModule => {
+                // Does this map pack define dynamic models? If so, import them.
+                if (Array.isArray(mapPackModule.models)) {
+                    this.#logger.log(
+                        "debug",
+                        "Found this many models in the map pack, adding them now:",
+                        mapPackModule.models.length
+                    );
+                    mapPackModule.models.forEach(modelType => this.#addModel(modelType));
+                }
+                // Does this map pack define an entry point? If so, invoke it.
+                if (typeof mapPackModule.default === "function") {
+                    this.#logger.log("debug", "Found map pack's entry point, calling now");
+                    try {
+                        mapPackModule.default(this);
+                    } catch (e) {
+                        this.#logger.log("error", "An error occurred whilst invoking the map pack's entry point:", e);
+                    }
+                }
+                this.event("MapPackLoaded", mapPackPath, mapPackModule);
+            })
+            .catch(e => this.#logger.log("error", "Failed to load map pack:", mapPackPath, e));
+    }
+
+    /**
      * Sets up the server.
      * @param {Object} options The options passed to the constructor.
      */
     #setupServer(options) {
         this.#logger.log("trace", "Setting up the server");
+
+        // Set up the map pack public folder static folder.
+        if (typeof options.mapPackPath === "string" && options.mapPackPath.length > 0) {
+            const mapPackPublicFolder = {
+                path: join(options.mapPackPath, "public"),
+                url: "/pack",
+            };
+            this.#logger.log("debug", "Setting up map pack's static folder:", mapPackPublicFolder);
+            if (Array.isArray(options.folders)) {
+                options.folders.unshift(mapPackPublicFolder);
+            } else {
+                options.folders = [mapPackPublicFolder];
+            }
+        }
 
         // Set up the static folders.
         if (Array.isArray(options.folders)) {
