@@ -16,9 +16,4 @@ export default class MapManager extends Model {
      * @param {Object} mapPackModule The exports defined by the loaded map pack.
      */
     onMapPackLoaded(mapPackPath, mapPackModule) {}
-
-    /**
-     * Resets the state of the map manager, ready for another map pack.
-     */
-    onMapPackUnloaded() {}
 }

@@ -79,9 +79,7 @@ controller.updateComponentWhen("Connected", () =>
     // but only if they don't already have a menu open (which is what the false
     // argument achieves). That last part is important, as it prevents the map
     // pack from moving the player away from another menu when they refresh the
-    // browser. Furthermore, whenever a map pack is unloaded, every user's active
-    // menu component is cleared out, so if the player refreshes the browser after
-    // loading a new map pack, its main.mjs will open its "main menu" as intended.
+    // browser.
     controller.command("OpenMenu", "/pack/components/mainMenu/root.mjs", false)
 );
 ```
