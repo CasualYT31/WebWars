@@ -3,6 +3,8 @@
  * Defines the base class for models.
  */
 
+import { newLogger } from "#src/logging/logger.mjs";
+
 /**
  * Abstract base class for all models in the backend.
  * A model encapsulates data from the rest of the game, and exposes public-facing commands that allow external actors to
@@ -22,6 +24,9 @@
  * once the "owning" model has validated the command and updated its data in a valid manner.
  */
 export default class Model {
+    /// All models will have a logger object, the name of which will match the subclass's.
+    #logger = newLogger(this.constructor.name);
+
     /// Hides the controller from the model implementation, since models shouldn't have full access to it.
     #controller = null;
 
@@ -31,6 +36,14 @@ export default class Model {
      */
     constructor(controller) {
         this.#controller = controller;
+    }
+
+    /**
+     * Writes to the model's log.
+     * @param {...any} args The arguments to pass to the log() method.
+     */
+    log(...args) {
+        return this.#logger.log(...args);
     }
 
     /**

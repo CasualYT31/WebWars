@@ -5,43 +5,29 @@
 
 import controller from "/controller.mjs";
 
-let image = "pack/assets/background.jpg";
-controller.setBackground(image);
+let selectedMapFile = "";
 
 export default function MainMenu() {
     const { t, i18n } = ReactI18next.useTranslation();
-    const [count, setCount] = React.useState(0);
+    const [mapList, setMapList] = React.useState(controller.getModel("mapPack").mapFiles ?? []);
+
+    React.useEffect(() => {
+        // When the main menu component is mounted, set up our event handlers and the background.
+        controller.setBackground("pack/assets/background.jpg");
+        controller.updateComponentWhen(["MapsFolderScanned"], () => {
+            // Need to copy the array. React will not re-render the list otherwise.
+            setMapList([...controller.getModel("mapPack").mapFiles]);
+        });
+    }, []);
+
     return React.createElement(
         "div",
         null,
-        React.createElement("h1", { style: { color: "white" } }, count),
-        React.createElement("button", { onClick: () => setCount(count + 1) }, t("increment")),
         React.createElement(
-            "button",
-            {
-                onClick: () => {
-                    let newLang = "de";
-                    if (i18n.language == "de") {
-                        newLang = "en";
-                    }
-                    controller.command("SetLanguage", newLang);
-                },
-            },
-            t("lang")
+            "select",
+            { size: 10, onInput: ev => (selectedMapFile = ev.target.value) },
+            ...mapList.map(mapFile => React.createElement("option", null, mapFile))
         ),
-        React.createElement(
-            "button",
-            {
-                onClick: () => {
-                    if (image == "pack/assets/background.jpg") {
-                        image = "background.png";
-                    } else {
-                        image = "pack/assets/background.jpg";
-                    }
-                    controller.setBackground(image);
-                },
-            },
-            "Image"
-        )
+        React.createElement("button", { onClick: () => controller.command("LoadMap", selectedMapFile) }, t("loadMap"))
     );
 }

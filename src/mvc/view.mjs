@@ -122,6 +122,14 @@ export default class View {
         }
     }
 
+    /**
+     * A client will receive the list of map files available for loading.
+     * @param {Array<String>} files The paths to the map files in the loaded map pack.
+     */
+    onMapsFolderScanned(files) {
+        this.#queueSessionDataUpdate("mapPack", { mapFiles: files }, "onMapsFolderScanned");
+    }
+
     // MARK: Private
 
     /**
@@ -153,6 +161,7 @@ export default class View {
      * @param {String} event The server-side event that caused the update.
      */
     #queueSessionDataUpdate(partition, updates, event) {
+        this.#logger.log("trace", "Queued session data update:", partition, updates, event);
         this.#queuedSessionDataUpdates.push({
             partition: partition,
             updates: updates,
@@ -168,6 +177,13 @@ export default class View {
         if (this.#queuedSessionDataUpdates.length == 0) {
             return;
         }
+        this.#logger.log(
+            "trace",
+            "Applying queued session data updates:",
+            `Length: ${this.#queuedSessionDataUpdates.length}`,
+            `Publish: ${publish}`,
+            `Connected: ${this.isConnected()}`
+        );
         let sessionDataUpdates = {};
         let sessionDataEvents = new Set();
         // For each queued update...
@@ -187,12 +203,15 @@ export default class View {
             // 3. and keep track of the events that caused the updates.
             sessionDataEvents.add(event);
         }
+        sessionDataEvents = Array.from(sessionDataEvents);
+        this.#logger.log("trace", "Applied queued session data updates:", sessionDataUpdates, sessionDataEvents);
         // Once we've collated every update, push them to the client, and clear the queue.
         this.#queuedSessionDataUpdates = [];
         if (publish && this.isConnected()) {
+            this.#logger.log("trace", "Publishing data updates");
             sendMessage(this.#ws, ServerMessageType.Data, {
                 data: sessionDataUpdates,
-                events: Array.from(sessionDataEvents),
+                events: sessionDataEvents,
             });
         }
     }
@@ -208,6 +227,8 @@ export default class View {
     #sessionData = {
         /// Stores data on the UI of the client.
         ui: {},
+        /// Stores data on the currently loaded map pack.
+        mapPack: {},
     };
     #queuedSessionDataUpdates = [];
 }

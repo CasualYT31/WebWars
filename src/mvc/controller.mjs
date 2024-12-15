@@ -362,6 +362,7 @@ export default class Controller {
             sessionKey = newView.sessionKey;
             this.#views[sessionKey] = newView;
             this.#indexMethods(newView, true, false);
+            this.event("NewClient", sessionKey);
         }
     }
 

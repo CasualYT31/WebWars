@@ -6,7 +6,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { isValidSessionKey } from "#shared/protocol.mjs";
-import { newLogger } from "#src/logging/logger.mjs";
 import Model from "#src/mvc/model.mjs";
 
 /**
@@ -24,15 +23,15 @@ export default class FrontEndData extends Model {
         this.#clientSessionFile = clientSessionFile;
         try {
             this.#frontEndData = JSON.parse(readFileSync(this.#clientSessionFile, { encoding: "utf-8" }));
-            this.#logger.log("info", `Loaded client session file at ${this.#clientSessionFile}:`, this.#frontEndData);
+            this.log("info", `Loaded client session file at ${this.#clientSessionFile}:`, this.#frontEndData);
             if (typeof this.#frontEndData !== "object") {
-                this.#logger.log("warn", `Client session file at ${this.#clientSessionFile} did not store an object`);
+                this.log("warn", `Client session file at ${this.#clientSessionFile} did not store an object`);
                 this.#frontEndData = {};
             }
             // Now validate the data within it.
             for (const sessionKey in this.#frontEndData) {
                 if (!isValidSessionKey(sessionKey)) {
-                    this.#logger.log(
+                    this.log(
                         "warn",
                         `Loaded a session data entry stored under a faulty session key "${sessionKey}", deleting...`,
                         this.#frontEndData[sessionKey]
@@ -44,7 +43,7 @@ export default class FrontEndData extends Model {
                     const props = this.#dataKeyProperties[dataKey];
                     const data = this.#frontEndData[sessionKey][dataKey];
                     if (!props) {
-                        this.#logger.log(
+                        this.log(
                             "warn",
                             `Loaded data of key "${dataKey}" (which is invalid) and value ${data}, for session ` +
                                 `"${sessionKey}". Will delete the faulty data entry`,
@@ -54,7 +53,7 @@ export default class FrontEndData extends Model {
                         continue;
                     }
                     if (!props.isValid(data)) {
-                        this.#logger.log(
+                        this.log(
                             "warn",
                             `Loaded data of key "${dataKey}" and value ${data} (which is invalid), for session ` +
                                 `"${sessionKey}". Will delete the faulty data entry`,
@@ -67,9 +66,9 @@ export default class FrontEndData extends Model {
             }
         } catch (e) {
             if (e.code === "ENOENT") {
-                this.#logger.log("info", `There was no client session file at ${this.#clientSessionFile}:`, e);
+                this.log("info", `There was no client session file at ${this.#clientSessionFile}:`, e);
             } else {
-                this.#logger.log("error", `Couldn't load client session file from ${this.#clientSessionFile}:`, e);
+                this.log("error", `Couldn't load client session file from ${this.#clientSessionFile}:`, e);
             }
         }
     }
@@ -83,12 +82,7 @@ export default class FrontEndData extends Model {
         if (!(sessionKey in this.#frontEndData)) {
             return false;
         }
-        this.#logger.log(
-            "debug",
-            "Replaying persisted data for session key:",
-            sessionKey,
-            this.#frontEndData[sessionKey]
-        );
+        this.log("debug", "Replaying persisted data for session key:", sessionKey, this.#frontEndData[sessionKey]);
         for (const dataKey in this.#frontEndData[sessionKey]) {
             const props = this.#dataKeyProperties[dataKey];
             const data = this.#frontEndData[sessionKey][dataKey];
@@ -133,7 +127,7 @@ export default class FrontEndData extends Model {
         const props = this.#dataKeyProperties[dataKey];
         if (!props) {
             // This would indicate a developer error and not an error caused by the client.
-            this.#logger.log(
+            this.log(
                 "error",
                 `Attempted to update data of key "${dataKey}", which is invalid, to value ${newData}, for session ` +
                     `"${sessionKey}"`
@@ -141,7 +135,7 @@ export default class FrontEndData extends Model {
             return;
         }
         if (!props.isValid(newData)) {
-            this.#logger.log(
+            this.log(
                 "error",
                 `Attempted to update data of key "${dataKey}" to an invalid value ${newData}, for session ` +
                     `"${sessionKey}"`
@@ -151,7 +145,7 @@ export default class FrontEndData extends Model {
         if (!(sessionKey in this.#frontEndData)) {
             this.#frontEndData[sessionKey] = {};
         }
-        this.#logger.log(
+        this.log(
             "debug",
             "Setting data item (dataKey, newData, oldData, event, sessionKey):",
             dataKey,
@@ -181,11 +175,9 @@ export default class FrontEndData extends Model {
         try {
             writeFileSync(this.#clientSessionFile, JSON.stringify(persistedData), { encoding: "utf-8" });
         } catch (e) {
-            this.#logger.log("error", `Couldn't write client session data to ${this.#clientSessionFile}:`, e);
+            this.log("error", `Couldn't write client session data to ${this.#clientSessionFile}:`, e);
         }
     }
-
-    #logger = newLogger("FrontEndData");
 
     /**
      * Front-end specific data, keyed on session key.
