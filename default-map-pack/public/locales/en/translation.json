@@ -1,3 +1,43 @@
 {
-    "loadMap": "Load Map"
+    "loadMap": "Load Map",
+
+    "ORANGE_COUNTRY_longname": "Orange Star",
+	"ORANGE_COUNTRY_shortname": "OS",
+	"ORANGE_COUNTRY_description": "Orange Star.",
+
+	"BLUE_COUNTRY_longname": "Blue Moon",
+	"BLUE_COUNTRY_shortname": "BM",
+	"BLUE_COUNTRY_description": "Blue Moon.",
+
+	"GREEN_COUNTRY_longname": "Green Earth",
+	"GREEN_COUNTRY_shortname": "GE",
+	"GREEN_COUNTRY_description": "Green Earth.",
+
+	"YELLOW_COUNTRY_longname": "Yellow Comet",
+	"YELLOW_COUNTRY_shortname": "YC",
+	"YELLOW_COUNTRY_description": "Yellow Comet.",
+
+	"BLACK_COUNTRY_longname": "Black Hole",
+	"BLACK_COUNTRY_shortname": "BH",
+	"BLACK_COUNTRY_description": "Black Hole.",
+
+    "12TH_BATTALION_longname": "12th Battalion",
+	"12TH_BATTALION_shortname": "12th",
+	"12TH_BATTALION_description": "12th Battalion.",
+
+    "LAZURIAN_ARMY_longname": "Lazurian Army",
+	"LAZURIAN_ARMY_shortname": "LA",
+	"LAZURIAN_ARMY_description": "Lazurian Army.",
+
+    "NEW_RUBINELLE_longname": "New Rubinelle Army",
+	"NEW_RUBINELLE_shortname": "NRA",
+	"NEW_RUBINELLE_description": "New Rubinelle Army.",
+
+    "INTELLIGENT_DEFENSE_SYSTEMS_longname": "Intelligent Defense Systems",
+	"INTELLIGENT_DEFENSE_SYSTEMS_shortname": "IDS",
+	"INTELLIGENT_DEFENSE_SYSTEMS_description": "Intelligent Defense Systems.",
+
+    "BANDIT_RAIDERS_longname": "Bandit Raiders",
+	"BANDIT_RAIDERS_shortname": "BR",
+	"BANDIT_RAIDERS_description": "Bandit Raiders."
 }
