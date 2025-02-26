@@ -39,5 +39,73 @@
 
     "BANDIT_RAIDERS_longname": "Bandit Raiders",
 	"BANDIT_RAIDERS_shortname": "BR",
-	"BANDIT_RAIDERS_description": "Bandit Raiders."
+	"BANDIT_RAIDERS_description": "Bandit Raiders.",
+
+    "CLEAR_WEATHER_longname": "Clear",
+    "CLEAR_WEATHER_shortname": "Clr",
+    "CLEAR_WEATHER_description": "Clear weather.",
+
+    "RAIN_WEATHER_longname": "Rain",
+    "RAIN_WEATHER_shortname": "Rain",
+    "RAIN_WEATHER_description": "TODO: what is the effect of rain?",
+
+    "SANDSTORM_WEATHER_longname": "Sandstorm",
+    "SANDSTORM_WEATHER_shortname": "Sand",
+    "SANDSTORM_WEATHER_description": "Indirect units suffer a -1 range penalty.",
+
+    "SNOW_WEATHER_longname": "Snow",
+    "SNOW_WEATHER_shortname": "Snow",
+    "SNOW_WEATHER_description": "Units use up more fuel when moving.",
+
+    "NORMAL_ENVIRONMENT_longname": "Normal",
+    "NORMAL_ENVIRONMENT_shortname": "Nrml",
+    "NORMAL_ENVIRONMENT_description": "Normal environment.",
+
+    "SNOWY_ENVIRONMENT_longname": "Snowy",
+    "SNOWY_ENVIRONMENT_shortname": "Snow",
+    "SNOWY_ENVIRONMENT_description": "Snowy environment.",
+
+    "SANDY_ENVIRONMENT_longname": "Sandy",
+    "SANDY_ENVIRONMENT_shortname": "Sand",
+    "SANDY_ENVIRONMENT_description": "Sandy environment.",
+
+    "WASTELAND_ENVIRONMENT_longname": "Wasteland",
+    "WASTELAND_ENVIRONMENT_shortname": "Wstl",
+    "WASTELAND_ENVIRONMENT_description": "Wasteland environment.",
+
+    "INFANTRY_MOVEMENT_longname": "Infantry",
+    "INFANTRY_MOVEMENT_shortname": "Inf",
+    "INFANTRY_MOVEMENT_description": "The infantry unit's movement type.",
+
+    "MECH_MOVEMENT_longname": "Mech",
+    "MECH_MOVEMENT_shortname": "Mech",
+    "MECH_MOVEMENT_description": "The mech unit's movement type.",
+
+    "TIRE_MOVEMENT_longname": "Tires",
+    "TIRE_MOVEMENT_shortname": "Tire",
+    "TIRE_MOVEMENT_description": "This unit uses tires to move.",
+
+    "TREAD_MOVEMENT_longname": "Tread",
+    "TREAD_MOVEMENT_shortname": "Tred",
+    "TREAD_MOVEMENT_description": "This unit uses treads to move.",
+
+    "AIR_MOVEMENT_longname": "Air",
+    "AIR_MOVEMENT_shortname": "Air",
+    "AIR_MOVEMENT_description": "This unit flies through the air.",
+
+    "PIPELINE_MOVEMENT_longname": "Pipeline",
+    "PIPELINE_MOVEMENT_shortname": "Pipe",
+    "PIPELINE_MOVEMENT_description": "This unit glides along pipes.",
+
+    "SHIP_MOVEMENT_longname": "Ships",
+    "SHIP_MOVEMENT_shortname": "Ship",
+    "SHIP_MOVEMENT_description": "This unit sails on the sea.",
+
+    "TRANSPORT_MOVEMENT_longname": "Transport",
+    "TRANSPORT_MOVEMENT_shortname": "Trns",
+    "TRANSPORT_MOVEMENT_description": "This sea unit can park on shoals.",
+
+    "SLIME_MOVEMENT_longname": "Slime",
+    "SLIME_MOVEMENT_shortname": "Slme",
+    "SLIME_MOVEMENT_description": "This unit is made of slime."
 }

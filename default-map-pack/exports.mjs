@@ -3,20 +3,24 @@
  * The default map pack containing the base Advance Wars games.
  */
 
+import * as Environments from "./src/types/environmentTypes.mjs";
 import * as Factions from "./src/types/factionTypes.mjs";
+import * as Movements from "./src/types/movementTypes.mjs";
+import * as Terrains from "./src/types/terrainTypes.mjs";
+import * as Weathers from "./src/types/weatherTypes.mjs";
 
 import PlayableMaps from "./src/playableMaps.mjs";
 
 export const commanders = [];
-export const environments = [];
+export const environments = Object.values(Environments);
 export const factions = Object.values(Factions);
-export const movements = [];
+export const movements = Object.values(Movements);
 export const structures = [];
-export const terrains = [];
+export const terrains = Object.values(Terrains);
 export const tiles = [];
 export const units = [];
 export const weapons = [];
-export const weathers = [];
+export const weathers = Object.values(Weathers);
 export function overrides(objectTypeName, objectType, context) {}
 
 /**

@@ -1,6 +1,6 @@
 /**
  * @file factionTypes.mjs
- * Defines all the factions of Advance Wars
+ * Defines all the factions of Advance Wars.
  */
 
 import FactionType from "#src/types/factionType.mjs";
