@@ -4,19 +4,13 @@
  */
 
 import { ClientMessageType, ServerMessageType, isValidSessionKey, sendMessage } from "/protocol.mjs";
-import MenuScene from "/menuScene.mjs";
+import GameEngine from "./gameEngine.mjs";
 import Model from "/model.mjs";
 
 /**
  * Manages the web socket connection between the client and the server.
  */
 class Controller {
-    /// The dimensions of the Phaser canvas.
-    canvas = Object.freeze({
-        width: 1280,
-        height: 720,
-    });
-
     /**
      * Create a new web socket connection and attempt to connect to the server.
      */
@@ -34,25 +28,10 @@ class Controller {
                 fallbackLng: "en",
                 debug: true,
             });
-        // Set up Phaser.
-        this.#phaserGame = new Phaser.Game({
-            width: this.canvas.width,
-            height: this.canvas.height,
-            // Credit where it's due: https://stackoverflow.com/a/60216568.
-            scale: {
-                // Fit to window.
-                mode: Phaser.Scale.FIT,
-                // Center vertically and horizontally.
-                autoCenter: Phaser.Scale.CENTER_BOTH,
-            },
-            scene: MenuScene,
-            parent: "root",
-            dom: {
-                createContainer: true,
-                pointerEvents: "all",
-            },
-        });
+        // Set up the game engine.
+        this.#gameEngine = new GameEngine();
         // Register system handlers now (these are never cleared).
+        this.#addEventHandler("system", "onConnected", () => this.#gameEngine.onConnected());
         this.#addEventHandler("system", "onMenuOpened", this.#updateRootComponent.bind(this));
         this.#addEventHandler("system", "onLanguageUpdated", () =>
             i18next.changeLanguage(this.getModel("ui").language)
@@ -121,11 +100,11 @@ class Controller {
     }
 
     /**
-     * Gives direct access to the Phase 3 game object.
-     * @returns {Phaser.Game} The Phaser game.
+     * Gives direct access to the GameEngine object.
+     * @returns {GameEngine} The GameEngine.
      */
     get game() {
-        return this.#phaserGame;
+        return this.#gameEngine;
     }
 
     // MARK: Front-end API
@@ -342,7 +321,7 @@ class Controller {
     };
     #reactRootPath = "";
     #reactRoot = null;
-    #phaserGame = null;
+    #gameEngine = null;
 }
 
 /**

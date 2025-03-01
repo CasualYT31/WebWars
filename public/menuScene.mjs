@@ -45,7 +45,7 @@ export default class MenuScene extends Phaser.Scene {
                 this.backgroundImage.setTexture(key);
             }
             this.backgroundImage.setOrigin(0, 0);
-            this.backgroundImage.setDisplaySize(controller.canvas.width, controller.canvas.height);
+            this.backgroundImage.setDisplaySize(controller.game.config.width, controller.game.config.height);
         } else {
             console.debug("Loading background image for menu scene", key, imageUrl);
             this.load.image(key, imageUrl);
