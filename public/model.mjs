@@ -9,7 +9,7 @@
  */
 export default class Model {
     /// You can access the data directly, but it will always be frozen, so you cannot change it directly.
-    #data = {};
+    #data = Object.freeze({});
     get data() {
         return this.#data;
     }

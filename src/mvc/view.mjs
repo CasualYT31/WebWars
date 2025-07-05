@@ -85,7 +85,11 @@ export default class View {
         // Apply any queued session data updates, but don't publish them. Instead, we publish the entirety of the
         // session data with the verification message.
         this.#applyQueuedSessionDataUpdates(false);
-        sendMessage(this.#ws, ServerMessageType.Verified, { sessionKey: this.sessionKey, data: this.#sessionData });
+        sendMessage(this.#ws, ServerMessageType.Verified, {
+            sessionKey: this.sessionKey,
+            bootTimestamp: this.#controller.bootTimestamp,
+            data: this.#sessionData,
+        });
         return true;
     }
 

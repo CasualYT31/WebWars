@@ -1,6 +1,6 @@
 /**
  * @file controller.mjs
- * The controller code for the client.
+ * The entry point of the client code.
  */
 
 import { ClientMessageType, ServerMessageType, isValidSessionKey, sendMessage } from "/protocol.mjs";
@@ -31,7 +31,6 @@ class Controller {
         // Set up the game engine.
         this.#gameEngine = new GameEngine();
         // Register system handlers now (these are never cleared).
-        this.#addEventHandler("system", "onConnected", () => this.#gameEngine.onConnected());
         this.#addEventHandler("system", "onMenuOpened", this.#updateRootComponent.bind(this));
         this.#addEventHandler("system", "onLanguageUpdated", () =>
             i18next.changeLanguage(this.getModel("ui").language)
@@ -154,6 +153,24 @@ class Controller {
                         `path=/; SameSite=None; Secure=None`;
                     this.#sessionKey = newSessionKey;
                     this.#serverVerified = true;
+                    if (this.#bootTimestamp === null) {
+                        // This is the client's first time connecting to a server, simply record the server's boot
+                        // timestamp so that if the client disconnects then reconnects to the server, it will know
+                        // whether or not the server has rebooted.
+                        this.#bootTimestamp = decodedMessage.payload.bootTimestamp;
+                    } else if (this.#bootTimestamp !== decodedMessage.payload.bootTimestamp) {
+                        // The client has reconnected with the server after a server reboot. Reset the state of the
+                        // client.
+                        this.#bootTimestamp = decodedMessage.payload.bootTimestamp;
+                        // TODO: We should really get rid of the old root React node, too, just in case the new map pack
+                        //       doesn't remove it indirectly.
+                    } else {
+                        // The client has reconnected with the server and it hasn't rebooted. Simply resume the paused
+                        // scenes.
+                        // TODO: unsure if this is the best approach, the server's state may have changed to where a
+                        //       different scene will need activating and previously active scenes may need to remain
+                        //       paused?
+                    }
                     this.#updateModelsAndEmitEvents(decodedMessage.payload.data, [
                         "onConnected",
                         "onMenuOpened",
@@ -270,6 +287,26 @@ class Controller {
     // MARK: React Component Management
 
     /**
+     * Gets the element used as the root React node.
+     * @returns {HTMLElement} The element used as the root React node.
+     */
+    #getReactRootElement() {
+        return document.querySelector("#root>div");
+    }
+
+    /**
+     * Unmounts the current root React node/component and clears all of the component event handlers.
+     */
+    #unloadRootComponent() {
+        this.#clearEventHandlers("component");
+        if (this.#reactRoot) {
+            this.#reactRoot.unmount();
+        }
+        this.#reactRoot = null;
+        this.#reactRootPath = "";
+    }
+
+    /**
      * Whenever the user opens a new menu, unload the current root component, and render the new root component that is
      * stored in the "ui" model.
      */
@@ -286,12 +323,8 @@ class Controller {
         console.debug(`Updating root React component to "${componentModulePath}" from "${this.#reactRootPath}"`);
         import(componentModulePath)
             .then(componentModule => {
-                // Remove the component event handlers that were added by the current root component and its children.
-                this.#clearEventHandlers("component");
-                if (this.#reactRoot) {
-                    this.#reactRoot.unmount();
-                }
-                this.#reactRoot = ReactDOM.createRoot(document.querySelector("#root>div"));
+                this.#unloadRootComponent();
+                this.#reactRoot = ReactDOM.createRoot(this.#getReactRootElement());
                 this.#reactRoot.render(React.createElement(componentModule.default, null, null));
                 console.debug(`Rendered new root React component "${componentModulePath}"`);
                 this.#reactRootPath = componentModulePath;
@@ -311,6 +344,7 @@ class Controller {
         }
         return "";
     })();
+    #bootTimestamp = null;
     #ws = null;
     #serverVerified = false;
     #models = {};

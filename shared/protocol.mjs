@@ -16,7 +16,7 @@ export const ClientMessageType = {
  */
 export const ServerMessageType = {
     /// The server tells a client that it is verified and has the given session key.
-    /// The entirety of the client's session data is also pushed.
+    /// The server's boot timestamp, and the entirety of the client's session data, are also pushed.
     Verified: 1,
     /// The server pushes an update to the client's session data, and tells it what events to fire.
     Data: 2,

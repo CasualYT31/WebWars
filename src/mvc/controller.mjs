@@ -19,28 +19,36 @@ import View from "#src/mvc/view.mjs";
  */
 export default class Controller {
     /**
-     * Hooks up all of the given models, sets up the client session pool (the views), and starts the server.
-     * ~~ Options ~~
-     * port {Number} (Default: 80) The port to open the server on.
-     * files {Array<Object>} (Default: []) The files to serve.
-     *     path {String} The relative path to the file on disk to serve.
-     *     root {String} Where the path is relative to.
-     *     url {String} The URL path to the file.
-     * folders {Array<Object>} (Default: []) The folders to serve static files from.
-     *     path {String} The folder on disk to serve.
-     *     url {String} The URL path to map to the folder.
-     * noServer {Boolean} (Default: false) Pass true to stop the server from spinning up.
-     * onServerUp {Function} (Default: (port) => {}) Execute custom code when the server has been fully set up.
-     * models {Set<Class|Function>} (Default: Set()) A list of Model-based classes (or functions that return Model
-     *                              instances) to instantiate and attach to this controller.
-     * eventDispatchRate {Number} (Default: 40) Milliseconds that must elapse between event dispatches at a minimum.
-     *                            Directly dictates how fast the game should run.
-     * maxClientSessions {Number} (Default: 16) The maximum number of clients that can be connected to the server at a
-     *                            time.
-     * mapPackPath {String} (Default: "") A path to a map pack to load with this server. It must be relative to the CWD.
-     * @param {Object} options Configures the controller.
+     * @typedef {Object} WebServerFile
+     * @property {String} path The relative path to the file on disk to serve.
+     * @property {String} root Where the path is relative to.
+     * @property {String} url The URL path to the file.
      */
-    constructor(options) {
+
+    /**
+     * @typedef {Object} WebServerFolder
+     * @property {String} path The folder on disk to serve.
+     * @property {String} url The URL path to map to the folder.
+     */
+
+    /**
+     * Hooks up all of the given models, sets up the client session pool (the views), and starts the server.
+     * @param {Object} options Configures the controller.
+     * @param {Number} [options.port=80] The port to open the server on.
+     * @param {Array<WebServerFile>} [options.files=[]] The files to serve.
+     * @param {Array<WebServerFolder>} [options.folders=[]] The folders to serve static files from.
+     * @param {Boolean} [options.noServer=false] Pass true to stop the server from spinning up.
+     * @param {Function} [options.onServerUp=(port) => {}] Execute custom code when the server has been fully set up.
+     * @param {Set<Model.constructor>} [options.models=new Set()] The Model-based classes to instantiate and attach to
+     *        this controller.
+     * @param {Number} [options.eventDispatchRate=40] Milliseconds that must elapse between event dispatches at a
+     *        minimum. Directly dictates how fast the game should run.
+     * @param {Number} [options.maxClientSessions=16] The maximum number of clients that can be connected to the server
+     *        at a time.
+     * @param {String} [options.mapPackPath=""] A path to a map pack to load with this server. It must be relative to
+     *        the CWD.
+     */
+    constructor(options = {}) {
         this.#logger.log("trace", "Setting up with options:", options);
         this.#setupModels(options.models ?? new Set());
         if (typeof options.mapPackPath === "string" && options.mapPackPath.length > 0) {
@@ -154,7 +162,7 @@ export default class Controller {
 
     /**
      * Sets up the backend models.
-     * @param {Set<Function>} modelTypes The types of models to instantiate.
+     * @param {Set<Model.constructor>} modelTypes The types of models to instantiate.
      */
     #setupModels(modelTypes) {
         this.#logger.log("trace", "Setting up the models");
@@ -165,7 +173,7 @@ export default class Controller {
 
     /**
      * Creates a new model and attaches its event handlers and commands.
-     * @param {Function} modelType The type of model to instantiate.
+     * @param {Model.constructor} modelType The type of model to instantiate.
      */
     #addModel(modelType) {
         // If modelType isn't a class type (or function), name will just resolve to `undefined`,
@@ -368,6 +376,17 @@ export default class Controller {
 
     #logger = newLogger("Controller");
     #server = expressWs(express());
+
+    #bootTimestamp = Date.now();
+    /**
+     * Returns when the controller was constructed.
+     * Views read this timestamp and pass it to verified clients. Clients use this timestamp to detect when the server
+     * has rebooted. Whenever the server reboots, the clients should reset their state in a similar fashion.
+     * @returns {Number} The number of milliseconds since epoch when this controller was constructed.
+     */
+    get bootTimestamp() {
+        return this.#bootTimestamp;
+    }
 
     #views = {};
     #models = {};

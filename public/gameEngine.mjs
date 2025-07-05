@@ -32,10 +32,18 @@ export default class GameEngine extends Phaser.Game {
                 pointerEvents: "all",
             },
         });
+        // GameEngine.center() may be used very frequently, so let's pre-calculate the center coordinate.
+        this.centerCoordinate = [this.config.width * 0.5, this.config.height * 0.5];
     }
 
     /**
-     * Perform additional setup steps that require a connection to the server.
+     * Calculates the center coordinate of the canvas.
+     * @param {Number} x The offset to apply in the X direction.
+     * @param {Number} y The offset to apply in the Y direction.
+     * @returns {Array<Number>} A two element array containing the calculated X and Y coordinates that can be spread
+     *          across function calls that expect separate X and Y arguments.
      */
-    onConnected() {}
+    center(x = 0.0, y = 0.0) {
+        return [this.centerCoordinate[0] + x, this.centerCoordinate[1] + y];
+    }
 }

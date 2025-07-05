@@ -45,7 +45,7 @@ map-pack
 
 ### `maps` Folder
 
-This folder stores all of the binary `.map` files that are loaded by the game when the pack is loaded. This folder can have as many sub-folders as the developer desires, however, all `.map` files must be located within this root-level `maps` folder. `.map` files have a consistent format across all map packs, but the values stored within them will hold different means based on the map pack they are within, so you should not expect `.map` files from one pack to be loadable with another.
+This folder stores all of the binary `.map` files that are loaded by the game when the pack is loaded. This folder can have as many sub-folders as the developer desires, however, all `.map` files must be located within this root-level `maps` folder. `.map` files have a consistent format across all map packs, but the values stored within them will hold different meanings based on the map pack they are within, so you should not expect `.map` files from one pack to be loadable with another.
 
 ### `public` Folder
 
@@ -57,7 +57,7 @@ It is not mandatory to store all of your assets in this folder; the game lets yo
 
 ### `components` Folder
 
-It is also customary to organize all of your React components in a `components` folder, with each menu of the game occupying a `root.mjs` component, containing many `subComponents` as necessary. The only restriction is that only one menu can be displayed at a time, otherwise you're free to organise your UI code in any way. For example, if you need to show two menus at once, you'll need to combine them as two components under one root menu component.
+It is also customary to organize all of your React components in a `components` folder, with each menu of the game occupying a `root.mjs` component, containing many `subComponents` as necessary. The only restriction is that only one menu can be displayed at a time, otherwise you're free to organize your UI code in any way. For example, if you need to show two menus at once, you'll need to combine them as two components under one root menu component.
 
 ### `locales` Folder
 
