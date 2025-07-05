@@ -19,7 +19,7 @@ In place of `npm start`, you can also run the game directly using `node server.m
 
 The game's core codebase (`/src`, `/shared`, `/public`) is pretty bare. It is supposed to act as a framework with which you can create Advance Wars-like games. The `default-map-pack` will contain the code and assets that let you play any of the original four games on the GBA and the DS (primarily focusing on Dual Strike for now), but using the framework, you can develop any 2D turn-based strategy game that's played on a tiled map.
 
-Map packs are made up of the following folders and files. Technically only the root-level `exports.mjs` script is mandatory, but on its own the exports script is not very useful.
+Map packs are made up of the following folders and files. Technically only the root-level `exports.mjs` script and the public-level `main.mjs` script are mandatory.
 
 ```
 map-pack
@@ -38,6 +38,8 @@ map-pack
             de
                 translation.json
             etc.
+        scenes
+            sceneName.mjs
         main.mjs
     src
     exports.mjs
@@ -49,11 +51,11 @@ This folder stores all of the binary `.map` files that are loaded by the game wh
 
 ### `public` Folder
 
-This folder contains all of the front-end code and assets. When a map pack is loaded, the game's web server will map all `GET` requests that begin with `/pack` in their URLs to this `public` folder (as if they were a static folder). It's important to note that front-end assets largely dictate how the game looks and will have no bearing on how the game runs on the server. Additionally, most of the front-end code will consist of React components that dictate how the UI of the game will be structured and how it will function.
+This folder contains all of the front-end code and assets. When a map pack is loaded, the game's web server will map all `GET` requests that begin with `/pack` in their URLs to this `public` folder (as if they were a static folder). It's important to note that front-end assets largely dictate how the game looks and will have no bearing on how the game runs on the server. Additionally, most of the front-end code will consist of React components that dictate how the UI of the game will be structured and how it will function, and Phaser scenes that dictate how the game engine runs and how the user can interact with the game.
 
 ### `assets` Folder
 
-It is not mandatory to store all of your assets in this folder; the game lets you organise your front-end files in however which way you please (with a few exceptions) but it is customary to place them all in a single `assets` folder. Specifically, assets will include sprite sheets, audio files, fonts, etc.
+It is not mandatory to store all of your assets in this folder; the game lets you organize your front-end files in however which way you please (with a few exceptions) but it is customary to place them all in this folder. Specifically, assets will include sprite sheets, audio files, fonts, etc.
 
 ### `components` Folder
 
@@ -63,25 +65,46 @@ It is also customary to organize all of your React components in a `components` 
 
 The front-end `Controller` mandates that translation files be stored in this root-level `locales` folder, where each language has its own folder containing at least a single `translation.json` script. Your map pack can have any I18Next namespaces you like (this means additional `*.json` scripts), but the language keys (e.g. `en`, `de`, etc.) are shared across all map packs.
 
+### `scenes` Folder
+
+Again, you can store all of your Phaser scenes and other Phaser-based code in a `scenes` folder, but it's not mandatory to store them as such. Unlike the React components, the client is largely given full control over how it sets up Phaser and its scene management once it has connected to the server. The only time the client's controller will interfere with the Phaser game engine is when the client disconnects from and reconnects to the server. Disconnects will cause the game engine to pause, and reconnects will cause the game engine to resume, unless the client detects that the server has been rebooted, in which case the game engine will be torn down and set up again using whatever map pack the server has loaded after its reboot.
+
 ### `main.mjs` File
 
-If you need to run some code whenever a client connects to the server (such as opening your map pack's "main" menu where appropriate), you'll need to write a root-level `main.mjs` script. This gets imported by the `WebWars.html` page on initial load. This is before the client has connected with the server, so you'll usually want to run your code once the `Connected` event arrives:
+When the client connects to the server, it will dynamically import this script. It must export two functions:
+
+1. `onInitialConnection()`. Invoked when the game is first opened or when the server reboots and the client reconnects to it. The Phaser game engine will be freshly initialized when this handler is invoked, so its primary responsibility is to continue initializing the game engine for your map pack's needs. It should then attempt to show the necessary scene/s and React component that align with the user's assigned menu. You must not assume that the user doesn't have any menu already opened: don't forget that this is tracked by the server and is stored under the `ui` front-end model, which will by this point be populated and can be read from via the controller.
+2. `onReconnection()`. Invoked when the client reconnects to the server and the server has not rebooted. In this case, the Phaser game engine has been fully initialized since the initial connection step, so this handler's only purpose is to synchronize the client with the server's state (which, again, can be read from the front-end models). However, previously registered scene handlers should primarily be responsible for this synchronization and they are invoked before this onReconnection handler.
+
+One important point to note is that your `main.mjs` script does not need to manually open and attach React component/s: the controller does this for you before invoking any of the handlers above. But you may wish to change menus via the `OpenMenu` command in some scenarios.
+
+An example script follows:
 
 ```js
 // /public and /shared are accessible directly from the root of the game's URL (/).
 import controller from "/controller.mjs";
 
-// This event is emitted whenever the client successfully connects with the server,
-// whether that be on initial load, or when the client reconnects after connection
-// drops.
-controller.updateComponentWhen("Connected", () =>
-    // For example, this tells the client to open the "main menu" root component,
-    // but only if they don't already have a menu open (which is what the false
-    // argument achieves). That last part is important, as it prevents the map
-    // pack from moving the player away from another menu when they refresh the
-    // browser.
-    controller.command("OpenMenu", "/pack/components/mainMenu/root.mjs", false)
-);
+// Remember that the map pack's public folder is accessible via /pack.
+import MainMenuScene from "/pack/scenes/mainMenu.mjs";
+
+// Set up Phaser and your UI state here.
+export function onInitialConnection() {
+    // This simple example adds a single Main Menu scene to Phaser and starts it.
+    // But a larger map pack with multiple scenes will need to be careful about which scenes it starts immediately,
+    // depending on the currently opened menu.
+    controller.game.scene.add("MainMenu", MainMenuScene, true);
+    // This tells the client to open the "main menu" root component, but only if they don't already have a menu open
+    // (which is what the false argument achieves). That last part is important, as it prevents the map pack from moving
+    // the player away from another menu when they refresh the browser and cause this handler to be invoked again.
+    controller.command("OpenMenu", "/pack/components/mainMenu/root.mjs", false);
+}
+
+// Synchronize your Phaser state here.
+export function onReconnection() {
+    // This example doesn't have any logic here.
+    // Ideally scenes will have their own onMenuOpened handlers that put themselves to sleep or awaken themselves
+    // according to the current menu.
+}
 ```
 
 ### `src` Folder

@@ -10,6 +10,8 @@ import { join } from "node:path";
 import express from "express";
 import expressWs from "express-ws";
 
+import { ClientConnectionClosedReason } from "#shared/protocol.mjs";
+
 import { newLogger } from "#src/logging/logger.mjs";
 import Model from "#src/mvc/model.mjs";
 import View from "#src/mvc/view.mjs";
@@ -349,7 +351,10 @@ export default class Controller {
                     "Couldn't assign the new web socket connection to the existing client session because its " +
                         "existing web socket connection hasn't closed! Will close new web socket connection"
                 );
-                ws.close();
+                ws.close(
+                    ClientConnectionClosedReason.SimultaneousConnectionAttempt.code,
+                    ClientConnectionClosedReason.SimultaneousConnectionAttempt.reason
+                );
                 return;
             }
         } else {
@@ -362,7 +367,10 @@ export default class Controller {
                         "web socket connection. There are currently this many client sessions:",
                     existingSessionKeys.length
                 );
-                ws.close();
+                ws.close(
+                    ClientConnectionClosedReason.TooMayClients.code,
+                    ClientConnectionClosedReason.TooMayClients.reason
+                );
                 return;
             }
             this.#logger.log("info", "Creating new client session. Existing session keys:", existingSessionKeys);

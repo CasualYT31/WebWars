@@ -5,8 +5,6 @@
  * game engines particularly easy in the future.
  */
 
-import MenuScene from "/menuScene.mjs";
-
 /**
  * Manages a Phaser game engine instance.
  */
@@ -25,7 +23,6 @@ export default class GameEngine extends Phaser.Game {
                 // Center vertically and horizontally.
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
-            scene: MenuScene,
             parent: "root",
             dom: {
                 createContainer: true,
@@ -33,7 +30,7 @@ export default class GameEngine extends Phaser.Game {
             },
         });
         // GameEngine.center() may be used very frequently, so let's pre-calculate the center coordinate.
-        this.centerCoordinate = [this.config.width * 0.5, this.config.height * 0.5];
+        this.#centerCoordinate = [this.config.width * 0.5, this.config.height * 0.5];
     }
 
     /**
@@ -44,6 +41,11 @@ export default class GameEngine extends Phaser.Game {
      *          across function calls that expect separate X and Y arguments.
      */
     center(x = 0.0, y = 0.0) {
-        return [this.centerCoordinate[0] + x, this.centerCoordinate[1] + y];
+        return [this.#centerCoordinate[0] + x, this.#centerCoordinate[1] + y];
     }
+
+    /**
+     * Stores the X and Y of the coordinate that's at the center of the game's canvas.
+     */
+    #centerCoordinate = [0, 0];
 }

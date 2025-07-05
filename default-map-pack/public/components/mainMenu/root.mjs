@@ -12,8 +12,7 @@ export default function MainMenu() {
     const [mapList, setMapList] = React.useState(controller.getModel("mapPack").mapFiles ?? []);
 
     React.useEffect(() => {
-        // When the main menu component is mounted, set up our event handlers and the background.
-        controller.setBackground("pack/assets/background.jpg");
+        // When the main menu component is mounted, set up our event handlers.
         controller.updateComponentWhen(["MapsFolderScanned"], () => {
             // Need to copy the array. React will not re-render the list otherwise.
             setMapList([...controller.getModel("mapPack").mapFiles]);
