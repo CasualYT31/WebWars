@@ -1,4 +1,4 @@
-import { optionDefinitions } from "../server.mjs";
+import { optionDefinitions } from "../../server.mjs";
 
 test("ensures matching defaults are in descriptions", () => {
     optionDefinitions

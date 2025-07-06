@@ -26,4 +26,4 @@ export function overrides(objectTypeName, objectType, context) {}
 /**
  * The models that this map pack is dynamically importing.
  */
-export const models = [PlayableMaps];
+export const models = [{ model: PlayableMaps }];

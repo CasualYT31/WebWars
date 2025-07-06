@@ -1,5 +1,5 @@
 /**
- * @file server.js
+ * @file server.mjs
  * The entry point for the WebWars server.
  * Starts the server that runs the game and serves assets.
  */
@@ -52,7 +52,7 @@ export const optionDefinitions = [
         type: String,
         defaultValue: "logs/WebWars.log",
         description: "The log file to write to (default: logs/WebWars.log)",
-        typeLabel: "{underline filepath}",
+        typeLabel: "{underline file path}",
     },
     {
         name: "no-log-file",
@@ -71,6 +71,22 @@ export const optionDefinitions = [
         typeLabel: "",
     },
     // MARK: Game
+    {
+        name: "client-sessions",
+        alias: "s",
+        type: String,
+        defaultValue: "client-sessions.json",
+        description:
+            "The path to the script that contains the server's persisted client session data. You can provide this " +
+            "option with no value to disable the persistence of client session data (default: client-sessions.json)",
+        typeLabel: "{underline [file path]}",
+    },
+    {
+        name: "do-not-persist-client-sessions",
+        type: Boolean,
+        description: "If you wish to load client sessions from disk, but not persist updates, then provide this flag",
+        typeLabel: "",
+    },
     {
         name: "map-pack",
         alias: "m",
@@ -136,7 +152,13 @@ if (esMain(import.meta)) {
             },
         ],
         onServerUp: port => console.log(`Open http://localhost:${port} in your browser to open the game!`),
-        models: new Set([FrontEndData, MapManager]),
+        models: [
+            {
+                model: FrontEndData,
+                arguments: [options["client-sessions"], !options["do-not-persist-client-sessions"]],
+            },
+            { model: MapManager },
+        ],
         mapPackPath: options["map-pack"],
     });
 }

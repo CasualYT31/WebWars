@@ -57,7 +57,7 @@ export default class MapManager extends Model {
         })) {
             this.#objectTypes[arrayName] = {};
             if (!Array.isArray(mapPackModule[arrayName])) {
-                this.log("error", "Map pack does not export an array for:", arrayName);
+                this.log("warn", "Map pack does not export an array for:", arrayName);
                 continue;
             }
             this.log(

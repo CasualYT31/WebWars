@@ -10,7 +10,7 @@ import {
     isValidSessionKey,
     sendMessage,
 } from "/protocol.mjs";
-import GameEngine from "./gameEngine.mjs";
+import GameEngine from "/gameEngine.mjs";
 import Model from "/model.mjs";
 
 /**
@@ -159,9 +159,7 @@ class Controller {
                     console.debug(`The client has received the session key from the server: ${newSessionKey}`);
                     const d = new Date();
                     d.setTime(d.getTime() + 34560000000); // Expires in 400 days, which is the default cap on cookies.
-                    document.cookie =
-                        `sessionKey=${newSessionKey}; expires=${d.toUTCString()}; ` +
-                        `path=/; SameSite=None; Secure=None`;
+                    document.cookie = `sessionKey=${newSessionKey}; expires=${d.toUTCString()}; path=/`;
                     this.#sessionKey = newSessionKey;
                     this.#serverVerified = true;
                     this.#hideDisconnectedOverlay();
@@ -575,6 +573,9 @@ export default (function controller() {
     if (controller.controller === undefined) {
         console.debug("Loading controller");
         controller.controller = new Controller();
+        // Global used by the E2E tests to figure out when the controller has been constructed.
+        // None of those tests should continue until it has.
+        window.WebWars = { controllerLoaded: true };
         console.debug("Controller loaded");
     }
     return controller.controller;

@@ -15,6 +15,11 @@ To choose which port to run the game on, you can provide the `--port PORT_NUMBER
 
 In place of `npm start`, you can also run the game directly using `node server.mjs`, `node server.mjs --port 8080`, etc.
 
+## Testing
+
+You can test the back end using: `npm test`.
+You can test the back end + front end using: `npx playwright test`.
+
 ## Map Packs
 
 The game's core codebase (`/src`, `/shared`, `/public`) is pretty bare. It is supposed to act as a framework with which you can create Advance Wars-like games. The `default-map-pack` will contain the code and assets that let you play any of the original four games on the GBA and the DS (primarily focusing on Dual Strike for now), but using the framework, you can develop any 2D turn-based strategy game that's played on a tiled map.
@@ -117,7 +122,7 @@ This root-level script's purpose is to tell the server what back-end components 
 
 #### `models`
 
-If an array is exported using this identifier, the server will iterate through it and instantiate each given type as a model within the system. This is the mechanism via which you can receive events from the system, emit your own events, and register client-facing commands that let clients interact with your game. As such, each element of the array must be a class that inherits from `Model`, and not constructed objects (let the server construct the models).
+If an array is exported using this identifier, the server will iterate through it and instantiate each given model definition within the system. This is the mechanism via which you can receive events from the system, emit your own events, and register client-facing commands that let clients interact with your game. Each element of the array must be an object that contains a `"model"` attribute storing the class that inherits from `Model` (not an instantiated object: the server is responsible for constructing the models). You can also include an `"arguments"` attribute that stores an array of arguments to pass to the model's constructor. These always come after any mandatory arguments required for all models (check the back-end Model class for details).
 
 #### TODO
 

@@ -9,18 +9,35 @@ import { isValidSessionKey } from "#shared/protocol.mjs";
 import Model from "#src/mvc/model.mjs";
 
 /**
- * Stores data specific to the front-end on a per-client session basis.
+ * Stores data specific to the front end on a per-client session basis.
  * This will contain data that only one client will care about. This ranges from what menu they have open, to what
  * language they have selected. Everything the server doesn't care about is stored here.
  */
 export default class FrontEndData extends Model {
     prependSessionKeyToCommands = ["ReplayPersistedSessionDataIfSessionKeyExists", "OpenMenu", "SetLanguage"];
 
-    constructor(controller, clientSessionFile = "client-sessions.json") {
+    /**
+     * Set up the front end data model.
+     * @param {Controller} controller The controller to pass to the super constructor.
+     * @param {String} [clientSessionFile="client-sessions.json"] The path to read client session data from. Session
+     *        data will also be written to this file. If a blank string is given, client session data will not be
+     *        persisted nor will it be loaded from anywhere.
+     * @param {Boolean} [persistClientSessionChanges=true] If true, and a file is given, client sessions will be
+     *        persisted to the file every time they are updated. If false, or if no file is given, client session
+     *        changes will never be persisted.
+     */
+    constructor(controller, clientSessionFile = "client-sessions.json", persistClientSessionChanges = true) {
         super(controller);
+        this.#persistChanges = persistClientSessionChanges;
         // Try to load the persisted session data.
         // If the file can't be opened, assume there is no persisted session data.
         this.#clientSessionFile = clientSessionFile;
+        if (!this.#clientSessionFile) {
+            this.log("info", "Client session data will not be loaded or persisted");
+            return;
+        } else if (!this.#persistChanges) {
+            this.log("info", "Client session data changes will not be persisted");
+        }
         try {
             this.#frontEndData = JSON.parse(readFileSync(this.#clientSessionFile, { encoding: "utf-8" }));
             this.log("info", `Loaded client session file at ${this.#clientSessionFile}:`, this.#frontEndData);
@@ -94,7 +111,7 @@ export default class FrontEndData extends Model {
     }
 
     /**
-     * Instructs the front-end to open a new menu.
+     * Instructs the front end to open a new menu.
      * @param {String} sessionKey The session key of the client who must open a new menu.
      * @param {String} newComponent The path (relative to `public`) of the JS module script that exports the component
      *                              to load.
@@ -109,7 +126,7 @@ export default class FrontEndData extends Model {
     }
 
     /**
-     * Instructs the front-end to change their language.
+     * Instructs the front end to change their language.
      * @param {String} sessionKey The session key of the client whose language is being updated.
      * @param {String} newLanguage The language to set.
      */
@@ -163,6 +180,14 @@ export default class FrontEndData extends Model {
      * Persists client session data to the previously given file.
      */
     #persistSessionData() {
+        if (!this.#persistChanges) {
+            this.log("debug", "Will not write client session data to file as the model was configured not to");
+            return;
+        }
+        if (!this.#clientSessionFile) {
+            this.log("debug", "Will not write client session data to file as no file was configured");
+            return;
+        }
         const persistedData = {};
         for (const sessionKey in this.#frontEndData) {
             persistedData[sessionKey] = {};
@@ -188,6 +213,11 @@ export default class FrontEndData extends Model {
      * Path of the file that persists some front-end data.
      */
     #clientSessionFile = "";
+
+    /**
+     * Persist changes to client session data if a file was given at construction.
+     */
+    #persistChanges = true;
 
     /**
      * The events associated with each data key, along with the type of data they should hold and if they should be

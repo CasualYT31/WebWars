@@ -6,7 +6,7 @@
 import { newLogger } from "#src/logging/logger.mjs";
 
 /**
- * Abstract base class for all models in the backend.
+ * Abstract base class for all models in the back end.
  * A model encapsulates data from the rest of the game, and exposes public-facing commands that allow external actors to
  * update the data in controlled ways. A majority of the lower-level game logic will be within models.
  * When a model is instantiated by the controller, it will scan its methods and index those that follow the naming

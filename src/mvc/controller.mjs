@@ -34,6 +34,13 @@ export default class Controller {
      */
 
     /**
+     * @typedef {Object} ModelDefinition
+     * @property {Model.constructor} model The Model-based class to instantiate and attach to a controller.
+     * @property {Array<Any>} [arguments=[]] Additional arguments to pass to the model when it's constructed. These will
+     *           come after any mandatory Model arguments.
+     */
+
+    /**
      * Hooks up all of the given models, sets up the client session pool (the views), and starts the server.
      * @param {Object} options Configures the controller.
      * @param {Number} [options.port=80] The port to open the server on.
@@ -41,8 +48,8 @@ export default class Controller {
      * @param {Array<WebServerFolder>} [options.folders=[]] The folders to serve static files from.
      * @param {Boolean} [options.noServer=false] Pass true to stop the server from spinning up.
      * @param {Function} [options.onServerUp=(port) => {}] Execute custom code when the server has been fully set up.
-     * @param {Set<Model.constructor>} [options.models=new Set()] The Model-based classes to instantiate and attach to
-     *        this controller.
+     * @param {Array<ModelDefinition>} [options.models=[]] The Model-based classes to instantiate and attach to this
+     *        controller.
      * @param {Number} [options.eventDispatchRate=40] Milliseconds that must elapse between event dispatches at a
      *        minimum. Directly dictates how fast the game should run.
      * @param {Number} [options.maxClientSessions=16] The maximum number of clients that can be connected to the server
@@ -52,7 +59,7 @@ export default class Controller {
      */
     constructor(options = {}) {
         this.#logger.log("trace", "Setting up with options:", options);
-        this.#setupModels(options.models ?? new Set());
+        this.#setupModels(options.models ?? []);
         if (typeof options.mapPackPath === "string" && options.mapPackPath.length > 0) {
             options.mapPackPath = join(cwd(), options.mapPackPath);
             this.#loadMapPack(options.mapPackPath);
@@ -163,35 +170,45 @@ export default class Controller {
     }
 
     /**
-     * Sets up the backend models.
-     * @param {Set<Model.constructor>} modelTypes The types of models to instantiate.
+     * Sets up the back-end models.
+     * @param {Array<ModelDefinition>} modelDefinitions The definitions of the models to instantiate.
      */
-    #setupModels(modelTypes) {
+    #setupModels(modelDefinitions) {
         this.#logger.log("trace", "Setting up the models");
-        for (const modelType of modelTypes) {
-            this.#addModel(modelType);
+        for (const modelDefinition of modelDefinitions) {
+            this.#addModel(modelDefinition);
         }
     }
 
     /**
      * Creates a new model and attaches its event handlers and commands.
-     * @param {Model.constructor} modelType The type of model to instantiate.
+     * @param {ModelDefinition} modelDefinition The definition of the model to instantiate.
      */
-    #addModel(modelType) {
-        // If modelType isn't a class type (or function), name will just resolve to `undefined`,
-        // so no need to include this in the error handler.
-        this.#logger.log("debug", "Adding model:", modelType.name);
-        let model;
-        try {
-            model = new modelType(this);
-            if (!model instanceof Model) {
-                throw new Error("The given model type did not inherit from the Model base class!");
-            }
-        } catch (e) {
-            this.#logger.log("error", "Failed to add model:", modelType.name, e);
+    #addModel(modelDefinition) {
+        if (typeof modelDefinition !== "object") {
+            this.#logger.log("error", "Can't add model with invalid model definition:", modelDefinition);
             return;
         }
-        this.#models[modelType.name] = model;
+        if (typeof modelDefinition.model !== "function") {
+            this.#logger.log("error", "Can't add model with invalid model type:", modelDefinition);
+        }
+        if (!modelDefinition.model.prototype instanceof Model) {
+            this.#logger.log("error", "Can't add model that doesn't inherit from Model:", modelDefinition);
+        }
+        if (!modelDefinition.hasOwnProperty("arguments")) {
+            modelDefinition.arguments = [];
+        } else if (!Array.isArray(modelDefinition.arguments)) {
+            modelDefinition.arguments = [modelDefinition.arguments];
+        }
+        this.#logger.log("debug", "Adding model:", modelDefinition.model.name, ...modelDefinition.arguments);
+        let model;
+        try {
+            model = new modelDefinition.model(this, ...modelDefinition.arguments);
+        } catch (e) {
+            this.#logger.log("error", "Failed to add model:", modelDefinition.name, e);
+            return;
+        }
+        this.#models[modelDefinition.name] = model;
         this.#indexMethods(model, true, true);
         this.#commandsToPrependWithSessionKeys.push(...model.prependSessionKeyToCommands);
     }
@@ -243,7 +260,9 @@ export default class Controller {
                         "Found this many models in the map pack, adding them now:",
                         mapPackModule.models.length
                     );
-                    mapPackModule.models.forEach(modelType => this.#addModel(modelType));
+                    for (const modelDefinition of mapPackModule.models) {
+                        this.#addModel(modelDefinition);
+                    }
                 }
                 // Does this map pack define an entry point? If so, invoke it.
                 if (typeof mapPackModule.default === "function") {
