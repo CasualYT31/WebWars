@@ -36,6 +36,7 @@ test.describe("Successful connection", () => {
         }
         expect(
             await page.evaluate(async function () {
+                const GameEngine = (await import("/gameEngine.mjs")).default;
                 const controller = (await import("/controller.mjs")).default;
                 const mapFiles = controller.getModel("mapPack").mapFiles;
                 console.debug(mapFiles, Boolean(controller.game));
@@ -43,7 +44,7 @@ test.describe("Successful connection", () => {
                     Array.isArray(mapFiles) &&
                     mapFiles.length === 1 &&
                     mapFiles.at(0).endsWith("test.map") &&
-                    controller.game
+                    controller.game instanceof GameEngine
                 );
             }),
             "the front-end models and/or game engine weren't initialized"
