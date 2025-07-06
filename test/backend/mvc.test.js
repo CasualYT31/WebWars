@@ -40,7 +40,7 @@ test("integration of models and controller", async () => {
 
     const controller = new Controller({
         noServer: true,
-        models: new Set([TestModel1, TestModel2]),
+        models: [{ model: TestModel1 }, { model: TestModel2 }],
     });
     try {
         const model1 = controller.getModel("TestModel1");

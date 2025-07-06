@@ -205,10 +205,10 @@ export default class Controller {
         try {
             model = new modelDefinition.model(this, ...modelDefinition.arguments);
         } catch (e) {
-            this.#logger.log("error", "Failed to add model:", modelDefinition.name, e);
+            this.#logger.log("error", "Failed to add model:", modelDefinition.model.name, e);
             return;
         }
-        this.#models[modelDefinition.name] = model;
+        this.#models[modelDefinition.model.name] = model;
         this.#indexMethods(model, true, true);
         this.#commandsToPrependWithSessionKeys.push(...model.prependSessionKeyToCommands);
     }
