@@ -88,6 +88,13 @@ export const optionDefinitions = [
         typeLabel: "",
     },
     {
+        name: "max-client-sessions",
+        alias: "c",
+        type: clientCount => (Number(clientCount) >= 0 ? Number(clientCount) : undefined),
+        description: "Set the maximum number of clients that can connect to this server (default: 16)",
+        typeLabel: "{underline client count}",
+    },
+    {
         name: "map-pack",
         alias: "m",
         type: String,
@@ -159,6 +166,7 @@ if (esMain(import.meta)) {
             },
             { model: MapManager },
         ],
+        maxClientSessions: options["max-client-sessions"],
         mapPackPath: options["map-pack"],
     });
 }

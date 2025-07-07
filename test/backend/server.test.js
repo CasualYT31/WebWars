@@ -1,6 +1,6 @@
 import { optionDefinitions } from "../../server.mjs";
 
-test("ensures matching defaults are in descriptions", () => {
+test("ensure matching defaults are in descriptions", () => {
     optionDefinitions
         .filter(def => def.hasOwnProperty("defaultValue"))
         .forEach(def => {

@@ -159,6 +159,7 @@ class Controller {
                     console.debug(`The client has received the session key from the server: ${newSessionKey}`);
                     const d = new Date();
                     d.setTime(d.getTime() + 34560000000); // Expires in 400 days, which is the default cap on cookies.
+                    console.debug(`New session cookie will expire at ${d.getTime()}, ${d.toUTCString()}`);
                     document.cookie = `sessionKey=${newSessionKey}; expires=${d.toUTCString()}; path=/`;
                     this.#sessionKey = newSessionKey;
                     this.#serverVerified = true;
