@@ -79,6 +79,6 @@ export const ClientConnectionClosedReason = Object.freeze({
  * Maps ClientConnectionClosedReason web socket close codes to instruction messages to display to the user.
  */
 export const ClientConnectionClosedInstruction = Object.freeze({
-    4000: "Please wait until another player has disconnected, then refresh the page",
+    4000: "Please close the server, increase the max client sessions setting, then reboot the server",
     4001: "Please close your old tab and refresh this page to pick up where you left off",
 });

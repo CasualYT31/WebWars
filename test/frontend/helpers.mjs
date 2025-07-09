@@ -18,8 +18,8 @@ import { expect } from "@playwright/test";
  * @param {Number} basePort The base port the server will be running on. An offset based on the project the test is
  *        running in will be applied. Aim to have your base ports be divisible by 25 to account for this.
  * @param {String} mapPack Path to the map pack to load, relative to test/frontend.
- * @param {Object} options Additional options. The testCallback parameter can take its place if you have no need for
- *        them.
+ * @param {Array<String>} options Additional options. The testCallback parameter can take its place if you have no need
+ *        for them.
  * @param {Function} testCallback Invoked after the server has booted. It will include all of the tests you wish to run
  *        whilst the server is running. Once the callback finishes, successfully or due to an error, the server will be
  *        killed. Any errors will be re-raised once the shutdown has finished. The callback will be given the port the
@@ -36,20 +36,23 @@ export async function bootServer(testInfo, basePort, mapPack, options, testCallb
     basePort += portOffset;
     if (testCallback === undefined && typeof options === "function") {
         testCallback = options;
-        options = {};
+        options = [];
     }
-    const server = spawn("node", [
-        "server.mjs",
-        "--port",
-        `${basePort}`,
-        "--log-level",
-        "trace",
-        "--log-file",
-        `test-results/server-logs/${testInfo.project.name}/${testInfo.titlePath.join("/")}.log`,
-        "--client-sessions",
-        "--map-pack",
-        `test/frontend/${mapPack}`,
-    ]);
+    const server = spawn(
+        "node",
+        [
+            "server.mjs",
+            "--port",
+            `${basePort}`,
+            "--log-level",
+            "trace",
+            "--log-file",
+            `test-results/server-logs/${testInfo.project.name}/${testInfo.titlePath.join("/")}.log`,
+            "--client-sessions",
+            "--map-pack",
+            `test/frontend/${mapPack}`,
+        ].concat(options)
+    );
     try {
         await testCallback(basePort);
     } finally {
