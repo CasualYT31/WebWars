@@ -250,7 +250,6 @@ export default class Controller {
     #loadMapPack(mapPackPath) {
         this.#logger.log("info", "Loading map pack:", mapPackPath);
         // Try to load the given map pack's exports module.
-        // TODO: Is file:// only required on Windows?
         import(`file://${join(mapPackPath, "exports.mjs")}`)
             .then(mapPackModule => {
                 // Does this map pack define dynamic models? If so, import them.

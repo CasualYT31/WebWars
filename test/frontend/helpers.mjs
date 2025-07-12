@@ -7,6 +7,26 @@ import { spawn } from "node:child_process";
 
 import { expect } from "@playwright/test";
 
+import { ClientMessageType, sendMessage, ServerMessageType } from "#shared/protocol.mjs";
+
+/**
+ * Calculates a unique port for a worker based on a base port and the project the worker is running with.
+ * @param {import("@playwright/test").TestInfo} testInfo Information on the currently running test.
+ * @param {Number} basePort The base port the server will be running on. An offset based on the project the test is
+ *        running in will be applied. Aim to have your base ports be divisible by 25 to account for this.
+ * @returns {Number} The base port, offset.
+ */
+export function calculatePort(testInfo, basePort) {
+    const portOffset = testInfo.project.metadata.portOffset;
+    expect(
+        typeof portOffset === "number" && !isNaN(portOffset),
+        "your project doesn't have a port offset, make sure to add one that is unique from every other project's " +
+            "port offset"
+    ).toBeTruthy();
+    expect(basePort % 25, "base ports must be divisible by 25").toBe(0);
+    return basePort + portOffset;
+}
+
 /**
  * Boots the web server.
  * Unfortunately, it isn't possible to boot web servers on a per project basis via configuration alone:
@@ -26,14 +46,7 @@ import { expect } from "@playwright/test";
  *        server was opened on.
  */
 export async function bootServer(testInfo, basePort, mapPack, options, testCallback) {
-    const portOffset = testInfo.project.metadata.portOffset;
-    expect(
-        typeof portOffset === "number" && !isNaN(portOffset),
-        "your project doesn't have a port offset, make sure to add one that is unique from every other project's " +
-            "port offset"
-    ).toBeTruthy();
-    expect(basePort % 25, "base ports must be divisible by 25").toBe(0);
-    basePort += portOffset;
+    basePort = calculatePort(testInfo, basePort);
     if (testCallback === undefined && typeof options === "function") {
         testCallback = options;
         options = [];
@@ -53,6 +66,8 @@ export async function bootServer(testInfo, basePort, mapPack, options, testCallb
             `test/frontend/${mapPack}`,
         ].concat(options)
     );
+    // server.stdout.on("data", data => console.log("STDOUT: " + data));
+    // server.stderr.on("data", data => console.error("STDERR: " + data));
     try {
         await testCallback(basePort);
     } finally {
@@ -68,7 +83,7 @@ export async function bootServer(testInfo, basePort, mapPack, options, testCallb
  */
 export async function openGame(page, url = "") {
     await page.goto(url);
-    await page.waitForFunction(() => window?.WebWars?.controllerLoaded, undefined, { timeout: 5000 });
+    await page.waitForFunction(() => window?.WebWars?.controllerLoaded, undefined, { timeout: 10000 });
 }
 
 /**
@@ -91,7 +106,8 @@ export async function addSessionKey(context, key) {
 /**
  * Retrieves the session key stored in the browser's cookies, if it exists.
  * @param {import("@playwright/test").BrowserContext} context The browser context running the game.
- * @returns {import("@playwright/test").Cookie | undefined} The session key if it exists, undefined if it doesn't.
+ * @returns {Promise<import("@playwright/test").Cookie | undefined>} The session key if it exists, undefined if it
+ *          doesn't.
  */
 export async function getSessionKey(context) {
     const cookies = await context.cookies();
@@ -105,9 +121,12 @@ export async function getSessionKey(context) {
 /**
  * Waits for the client to connect to and be verified with the server.
  * @param {import("@playwright/test").Page} page The page running the game.
+ * @param {String} [flagToWaitFor="onInitialConnection"] The flag to wait for. Defaults to initial connection, but it
+ *        can be set to onReconnection to wait for the client to fully reconnect after a connection drop without a
+ *        server reboot.
  */
-export async function waitForConnection(page) {
-    await page.waitForFunction(() => window?.WebWars?.onInitialConnection, undefined, { timeout: 5000 });
+export async function waitForConnection(page, flagToWaitFor = "onInitialConnection") {
+    await page.waitForFunction(flag => window?.WebWars?.[flag], flagToWaitFor, { timeout: 5000 });
 }
 
 /**
@@ -128,7 +147,7 @@ export function controller(page) {
          * Front-end models will never contain data that can't be serialized using JSON since the back end sent it to
          * the front end using JSON to begin with.
          * @param {String} name The name of the model.
-         * @returns {Object} The model's data.
+         * @returns {Promise<Object>} The model's data.
          */
         getModel: async name =>
             await page.evaluate(async function (name) {
@@ -136,4 +155,41 @@ export function controller(page) {
                 return controller.default.getModel(name);
             }, name),
     };
+}
+
+/**
+ * Connects to a WebWars server via websocket, sends commands to it, then disconnects.
+ * @param {Number} port The port the server is running on.
+ * @param {String} sessionKey The session key to connect with.
+ * @param {...Array} commands The commands to send, each in the form of an array. The first element stores the name of
+ *        the command, and subsequent elements will be sent as arguments.
+ * @returns {Promise} Promise that's resolved when all commands have been sent to the server.
+ */
+export function sendCommands(port, sessionKey, ...commands) {
+    return new Promise(resolve => {
+        const ws = new WebSocket(`ws://localhost:${port}/${sessionKey}`);
+        ws.onmessage = ev => {
+            const decodedMessage = JSON.parse(ev.data);
+            // Ignore any other messages.
+            if (decodedMessage.type !== ServerMessageType.Verified) {
+                return;
+            }
+            if (sessionKey) {
+                expect(
+                    decodedMessage.payload.sessionKey,
+                    "could not connect to the server with the given session key"
+                ).toBe(sessionKey);
+            }
+            for (const command of commands) {
+                expect(Array.isArray(command), "given commands were in an invalid format").toBeTruthy();
+                expect(typeof command.at(0), "given commands were in an invalid format").toBe("string");
+                sendMessage(ws, ClientMessageType.Command, {
+                    name: command.at(0),
+                    data: command.slice(1),
+                });
+            }
+            ws.close();
+            resolve();
+        };
+    });
 }

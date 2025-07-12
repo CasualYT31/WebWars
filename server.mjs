@@ -34,6 +34,7 @@ export const optionDefinitions = [
         defaultValue: 80,
         description: "The port to run the game server on (default: 80)",
         typeLabel: "{underline number}",
+        lazyMultiple: true,
     },
     // MARK: Logging
     {
@@ -45,6 +46,7 @@ export const optionDefinitions = [
             .map((level, i) => `${level} or ${i}`)
             .join(", ")} (default: ${defaultLogLevel})`,
         typeLabel: "{underline level string or number}",
+        lazyMultiple: true,
     },
     {
         name: "log-file",
@@ -53,6 +55,7 @@ export const optionDefinitions = [
         defaultValue: "logs/WebWars.log",
         description: "The log file to write to (default: logs/WebWars.log)",
         typeLabel: "{underline file path}",
+        lazyMultiple: true,
     },
     {
         name: "no-log-file",
@@ -80,6 +83,7 @@ export const optionDefinitions = [
             "The path to the script that contains the server's persisted client session data. You can provide this " +
             "option with no value to disable the persistence of client session data (default: client-sessions.json)",
         typeLabel: "{underline [file path]}",
+        lazyMultiple: true,
     },
     {
         name: "do-not-persist-client-sessions",
@@ -91,8 +95,10 @@ export const optionDefinitions = [
         name: "max-client-sessions",
         alias: "c",
         type: clientCount => (Number(clientCount) >= 0 ? Number(clientCount) : undefined),
+        defaultValue: 16,
         description: "Set the maximum number of clients that can connect to this server (default: 16)",
         typeLabel: "{underline client count}",
+        lazyMultiple: true,
     },
     {
         name: "map-pack",
@@ -101,6 +107,7 @@ export const optionDefinitions = [
         defaultValue: "./default-map-pack",
         description: "The path to the map pack to load on start-up (default: ./default-map-pack)",
         typeLabel: "{underline folder path}",
+        lazyMultiple: true,
     },
 ];
 
@@ -126,12 +133,14 @@ export function getCommandLineArguments() {
         console.log(commandLineUsage(usageSections));
         process.exit();
     }
-    setLogLevel(options["log-level"]);
+    const logLevel = options["log-level"].at(-1);
+    setLogLevel(logLevel);
     if (!options["no-log-file"]) {
+        const logFile = options["log-file"].at(-1);
         if (!options["keep-log-file"]) {
-            rmSync(options["log-file"], { force: true });
+            rmSync(logFile, { force: true });
         }
-        setLogFilepath(options["log-file"]);
+        setLogFilepath(logFile);
     }
     return options;
 }
@@ -140,7 +149,7 @@ export function getCommandLineArguments() {
 if (esMain(import.meta)) {
     const options = getCommandLineArguments();
     new Controller({
-        port: options["port"],
+        port: options["port"].at(-1),
         files: [
             {
                 path: "WebWars.html",
@@ -162,11 +171,11 @@ if (esMain(import.meta)) {
         models: [
             {
                 model: FrontEndData,
-                arguments: [options["client-sessions"], !options["do-not-persist-client-sessions"]],
+                arguments: [options["client-sessions"].at(-1), !options["do-not-persist-client-sessions"]],
             },
             { model: MapManager },
         ],
-        maxClientSessions: options["max-client-sessions"],
-        mapPackPath: options["map-pack"],
+        maxClientSessions: options["max-client-sessions"].at(-1),
+        mapPackPath: options["map-pack"].at(-1),
     });
 }

@@ -23,9 +23,11 @@ class Controller {
     constructor() {
         // Register system handlers now (these are never cleared).
         this.#addEventHandler("system", "onMenuOpened", this.#updateRootComponent.bind(this));
-        this.#addEventHandler("system", "onLanguageUpdated", () =>
-            i18next.changeLanguage(this.getModel("ui").language)
-        );
+        this.#addEventHandler("system", "onLanguageUpdated", () => {
+            const newLanguage = this.getModel("ui").language;
+            console.debug(`Changing language to ${newLanguage} from ${i18next.language}`);
+            i18next.changeLanguage(newLanguage);
+        });
         // Set up I18Next.
         i18next
             .use(i18nextHttpBackend)
@@ -112,6 +114,27 @@ class Controller {
      */
     get game() {
         return this.#gameEngine;
+    }
+
+    // MARK: Dynamic Import
+
+    /**
+     * Dynamically imports a module.
+     * This implementation adds the boot timestamp to module URIs. The client always assumes that subsequent connections
+     * require a complete reset of the game's state, as the server has rebooted and reset its own state, too. After
+     * resetting its state, the client will try to import modules served from the server. They may have the same URIs as
+     * the dynamically imported modules from before the client reset its state, meaning that without the boot timestamp
+     * being attached as a query parameter to the URI, the module cache within the browser may hit on the same URIs and
+     * end up serving outdated modules! However, we do still want caching during regular play, hence the use of the boot
+     * timestamp and not an arbitrary one.
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import#module_namespace_object.
+     * @warning Note that this approach of dynamically importing modules leaks memory upon subsequent connections, but
+     *          there's no way around this currently.
+     * @param {String} uri The URI of the module to dynamically import.
+     * @returns {Promise<Object>} Resolves to the dynamically imported module.
+     */
+    #import(uri) {
+        return import(uri + `?t=${this.#bootTimestamp}`);
     }
 
     // MARK: Web Socket Handling
@@ -326,7 +349,7 @@ class Controller {
      */
     #importMapPackEntryPoint() {
         console.debug("Importing map pack's entry point module");
-        import("/pack/main.mjs")
+        this.#import("/pack/main.mjs")
             .then(entryPointModule => {
                 console.debug("Imported map pack's entry point module", entryPointModule);
                 if (typeof entryPointModule.onReconnection === "function") {
@@ -485,7 +508,7 @@ class Controller {
             return;
         }
         console.debug(`Updating root React component to "${componentModulePath}" from "${this.#reactRootPath}"`);
-        import(componentModulePath)
+        this.#import(componentModulePath)
             .then(componentModule => {
                 this.#unloadRootComponent();
                 this.#reactRoot = ReactDOM.createRoot(this.#reactRootElement);
@@ -573,10 +596,11 @@ class Controller {
 export default (function controller() {
     if (controller.controller === undefined) {
         console.debug("Loading controller");
+        window.WebWars = {};
         controller.controller = new Controller();
         // Global used by the E2E tests to figure out when the controller has been constructed.
         // None of those tests should continue until it has.
-        window.WebWars = { controllerLoaded: true };
+        window.WebWars.controllerLoaded = true;
         console.debug("Controller loaded");
     }
     return controller.controller;

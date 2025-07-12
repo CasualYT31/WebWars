@@ -77,19 +77,19 @@ export default defineConfig({
         // },
 
         /* Test against branded browsers. */
-        // {
-        //     name: "Microsoft Edge",
-        //     metadata: {
-        //         portOffset: 5,
-        //     },
-        //     use: { ...devices["Desktop Edge"], channel: "msedge" },
-        // },
-        // {
-        //     name: "Google Chrome",
-        //     metadata: {
-        //         portOffset: 6,
-        //     },
-        //     use: { ...devices["Desktop Chrome"], channel: "chrome" },
-        // },
+        {
+            name: "Microsoft Edge",
+            metadata: {
+                portOffset: 5,
+            },
+            use: { ...devices["Desktop Edge"], channel: "msedge" },
+        },
+        {
+            name: "Google Chrome",
+            metadata: {
+                portOffset: 6,
+            },
+            use: { ...devices["Desktop Chrome"], channel: "chrome" },
+        },
     ],
 });
