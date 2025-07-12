@@ -41,6 +41,8 @@ import {
  *        reference to the game engine, it will be tested. By default, these tests assume that the game engine instance
  *        cached from the first call is the same as the instance that can be found in the controller in the second call.
  *        Set this to false to expect that they're different instances.
+ * @param {Array<String>} [options.expectScenes=["Pack1"]] A list of scenes that are expected to be in the game engine,
+ *        if expectConnection is true.
  * @param {String} [options.expectMapFileToEndWith="test.map"] If expectConnection is true, expect the one and only map
  *        file in the maps model to end with this string.
  * @param {String} [options.expectReactMessage="Hello, World"] If expectConnection is true, the map pack's React message
@@ -151,18 +153,30 @@ async function connectAndTest(context, page, port, options = {}) {
                             // same test, we can test if it's the same instance or not.
                             window.WebWars.gameEngine = controller.game;
                         }
-                        console.debug(mapFiles, controller.game instanceof GameEngine, controller.game.isRunning);
+                        let sceneList = [];
+                        for (const sceneKey in controller.game.scene.keys) {
+                            sceneList.push(sceneKey);
+                        }
+                        console.debug(
+                            mapFiles,
+                            controller.game instanceof GameEngine,
+                            controller.game.isRunning,
+                            `${options.expectScenes} == ${sceneList}`
+                        );
+                        const sceneListsEqual = sceneList.sort().toString() == options.expectScenes.sort().toString();
                         return (
                             Array.isArray(mapFiles) &&
                             mapFiles.length === 1 &&
                             mapFiles.at(0).endsWith(options.expectMapFileToEndWith) &&
                             controller.game instanceof GameEngine &&
-                            controller.game.isRunning
+                            controller.game.isRunning &&
+                            sceneListsEqual
                         );
                     },
                     {
                         expectMapFileToEndWith: options?.expectMapFileToEndWith ?? "test.map",
                         expectSameGameEngineInstance: options?.expectSameGameEngineInstance ?? true,
+                        expectScenes: options?.expectScenes ?? ["Pack1"],
                     }
                 ),
                 "the front-end models and/or game engine weren't initialized"
@@ -520,7 +534,7 @@ test.describe("Successful reconnection", () => {
             window.WebWars.onInitialConnection = false;
         });
         // Reboot the server with a new map pack and some previously persisted session data.
-        const clientSessionsFile = "test/frontend/connection-map-pack-2/client-sessions.json";
+        const clientSessionsFile = `test/frontend/connection-map-pack-2/client-sessions-${testInfo.project.name}.json`;
         writeFileSync(clientSessionsFile, `{"${sessionKey}":{"language":"de"}}`);
         await bootServer(
             testInfo,
@@ -533,6 +547,7 @@ test.describe("Successful reconnection", () => {
                     expectWebSocketSessionKey: sessionKey,
                     expectSessionKey: sessionKey,
                     expectSameGameEngineInstance: false,
+                    expectScenes: ["Pack2"],
                     expectMapFileToEndWith: "test2.map",
                     expectReactMessage: "2Deu",
                 });

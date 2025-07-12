@@ -1,5 +1,5 @@
 # WebWars
-client-sessions.json
+client-sessions*.json
 
 # Logs
 logs

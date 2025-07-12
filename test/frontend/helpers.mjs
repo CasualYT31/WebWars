@@ -45,34 +45,40 @@ export function calculatePort(testInfo, basePort) {
  *        killed. Any errors will be re-raised once the shutdown has finished. The callback will be given the port the
  *        server was opened on.
  */
-export async function bootServer(testInfo, basePort, mapPack, options, testCallback) {
-    basePort = calculatePort(testInfo, basePort);
-    if (testCallback === undefined && typeof options === "function") {
-        testCallback = options;
-        options = [];
-    }
-    const server = spawn(
-        "node",
-        [
-            "server.mjs",
-            "--port",
-            `${basePort}`,
-            "--log-level",
-            "trace",
-            "--log-file",
-            `test-results/server-logs/${testInfo.project.name}/${testInfo.titlePath.join("/")}.log`,
-            "--client-sessions",
-            "--map-pack",
-            `test/frontend/${mapPack}`,
-        ].concat(options)
-    );
-    // server.stdout.on("data", data => console.log("STDOUT: " + data));
-    // server.stderr.on("data", data => console.error("STDERR: " + data));
-    try {
-        await testCallback(basePort);
-    } finally {
-        server.kill();
-    }
+export function bootServer(testInfo, basePort, mapPack, options, testCallback) {
+    return new Promise(async resolve => {
+        basePort = calculatePort(testInfo, basePort);
+        if (testCallback === undefined && typeof options === "function") {
+            testCallback = options;
+            options = [];
+        }
+        const server = spawn(
+            "node",
+            [
+                "server.mjs",
+                "--port",
+                `${basePort}`,
+                "--log-level",
+                "trace",
+                "--log-file",
+                `test-results/server-logs/${testInfo.project.name}/${testInfo.titlePath.join("/")}.log`,
+                "--client-sessions",
+                "--map-pack",
+                `test/frontend/${mapPack}`,
+            ].concat(options)
+        );
+        // Wait until the server has booted.
+        server.stdout.on("data", async data => {
+            if (data.toString().trimEnd().endsWith("in your browser to open the game!")) {
+                try {
+                    await testCallback(basePort);
+                } finally {
+                    server.kill();
+                }
+                resolve();
+            }
+        });
+    });
 }
 
 /**
