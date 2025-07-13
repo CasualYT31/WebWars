@@ -7,13 +7,13 @@ import WeatherType from "#src/types/weaponType.mjs";
 
 export class ClearWeather extends WeatherType {
     longName(context) {
-        return "CLEAR_WEATHER_longname";
+        return ["CLEAR_WEATHER_longname"];
     }
     shortName(context) {
-        return "CLEAR_WEATHER_shortname";
+        return ["CLEAR_WEATHER_shortname"];
     }
     description(context) {
-        return "CLEAR_WEATHER_description";
+        return ["CLEAR_WEATHER_description"];
     }
     icon(context) {
         return {};
@@ -28,13 +28,13 @@ export class ClearWeather extends WeatherType {
 
 export class RainWeather extends WeatherType {
     longName(context) {
-        return "RAIN_WEATHER_longname";
+        return ["RAIN_WEATHER_longname"];
     }
     shortName(context) {
-        return "RAIN_WEATHER_shortname";
+        return ["RAIN_WEATHER_shortname"];
     }
     description(context) {
-        return "RAIN_WEATHER_description";
+        return ["RAIN_WEATHER_description"];
     }
     icon(context) {
         return {};
@@ -49,13 +49,13 @@ export class RainWeather extends WeatherType {
 
 export class SandstormWeather extends WeatherType {
     longName(context) {
-        return "SANDSTORM_WEATHER_longname";
+        return ["SANDSTORM_WEATHER_longname"];
     }
     shortName(context) {
-        return "SANDSTORM_WEATHER_shortname";
+        return ["SANDSTORM_WEATHER_shortname"];
     }
     description(context) {
-        return "SANDSTORM_WEATHER_description";
+        return ["SANDSTORM_WEATHER_description"];
     }
     icon(context) {
         return {};
@@ -70,13 +70,13 @@ export class SandstormWeather extends WeatherType {
 
 export class SnowWeather extends WeatherType {
     longName(context) {
-        return "SNOW_WEATHER_longname";
+        return ["SNOW_WEATHER_longname"];
     }
     shortName(context) {
-        return "SNOW_WEATHER_shortname";
+        return ["SNOW_WEATHER_shortname"];
     }
     description(context) {
-        return "SNOW_WEATHER_description";
+        return ["SNOW_WEATHER_description"];
     }
     icon(context) {
         return {};

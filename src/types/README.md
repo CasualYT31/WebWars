@@ -1,12 +1,12 @@
 # Object Types
 
-Everything on a map, from the tiles, to the types of terrains on those tiles, the unit types, the commanders, etc. are all "objects." This folder documents the different fields that each category of object should store.
+Everything on a map, from the tiles, to the types of terrains on those tiles, the unit types, the commanders, etc. are all "objects." This folder defines the different fields that each category of object should store.
 
-Each object type is a subclass of one of the subclasses of `ObjectType` that are defined in this folder. Each field is a function that returns the desired value, and as input they will receive a single object, called the `context`. This object will contain a single key-value pair for each of the available object type categories, with the value storing the name of an object type. These will store different values depending on the object type category:
+Each object type is a subclass of one of the subclasses of `ObjectType` that are defined in this folder. Each field is a function that returns the desired value, and as input they will receive a single object, called the `context`. This object will contain a single key-value pair for each of the available object type categories, with the value being a list storing the name/s of an object type. These will store different values depending on the object type category:
 
 1. **Commander**:
    a. Commander: N/A\* (\*: Object type categories will never receive a name for their own category).
-   b. Weather: the name of the weather currently in play on the map the commander is playing on.
+   b. Weather: the name of the weather/s currently in play on the map the commander is playing on. (In Advance Wars, only one weather could be in play at a time, but there's no reason why we should introduce the same limitation into the core engine).
    c. Environment: ditto.
    d. Faction: the name of the faction the commander is currently commanding.
    e. Movement: N/A^ (^: Since there is a many-to-one relationship between units and the commander that leads them, there is no clear unit type name to pass here. This is where having a reference to the map would be helpful).
@@ -29,14 +29,14 @@ Each object type is a subclass of one of the subclasses of `ObjectType` that are
 3. **Environment**:
    a. Same as Weather except Weather and Environment are switched around.
 4. **Faction**:
-   a. Commander: Name of the primary commander currently leading this faction.
-   b. Weather: current weather.
+   a. Commander: Name/s of the commander/s currently leading this faction. Commander name lists will always list the primary commander first.
+   b. Weather: current weather/s.
    c. Environment: current environment.
    d. Faction: N/A\*.
    e. Movement - Weapon: N/A^.
 5. **Movement**:
-   a. Commander: blank, unless the unit that has this movement type is owned by a faction, in which case the name of the primary commander leading the faction that owns the unit that has this movement type. (In the original Advance Wars, all units required an owner, but on reflection this limitation seems needless, in fact I believe Advance Wars By Web has a hacky method of allowing ownerless units and it is used sometimes by map makers, so providing a proper way to achieve this could be useful).
-   b. Weather: current weather.
+   a. Commander: blank, unless the unit that has this movement type is owned by a faction, in which case the name/s of the commander/s leading the faction that owns the unit that has this movement type. (In the original Advance Wars, all units required an owner, but on reflection this limitation seems needless, in fact I believe Advance Wars By Web has a hacky method of allowing ownerless units and it is used sometimes by map makers, so providing a proper way to achieve this could be useful).
+   b. Weather: current weather/s.
    c. Environment: current environment.
    d. Faction: blank, or the name of the faction that owns the unit that has this movement type.
    e. Movement: N/A\*.
@@ -44,39 +44,42 @@ Each object type is a subclass of one of the subclasses of `ObjectType` that are
    f. Tile: blank, except if the unit that has this movement type happens to be on a tile, in which case the type of tile that the unit is currently located on.
    g. Terrain: blank, except if the unit that has this movement type happens to be on a tile, in which case the type of terrain that the tile has.
    h. Unit: the type of unit that has this movement type.
-   i. Weapon: the primary weapon of the unit that has this movement type, if the unit type has a weapon.
+   i. Weapon: the weapon/s of the unit that has this movement type, if the unit type has any.
 6. **Structure**:
-   a. Commander: blank, unless the structure is owned, in which case the primary commander leading the faction that owns the structure.
-   b. Weather & Environment: current.
-   c. Faction: blank, unless the structure is owned, in which case the faction that owns the structure.
-   d. Movement: N/A^.
-   e. Structure: N/A\*.
-   f. Tile: N/A^.
-   g. Terrain: N/A^.
-   h. Unit: N/A^.
-   i. Weapon: N/A^.
+   a. Commander: blank, unless the structure is owned, in which case the commander/s leading the faction that owns the structure.
+   b. Weather: current weather/s.
+   c. Environment: current environment.
+   d. Faction: blank, unless the structure is owned, in which case the faction that owns the structure.
+   e. Movement: N/A^.
+   f. Structure: N/A\*.
+   g. Tile: N/A^.
+   h. Terrain: N/A^.
+   i. Unit: N/A^.
+   j. Weapon: N/A^.
 7. **Tile**:
-   a. Commander: blank, unless the tile is owned, in which case the primary commander leading the faction that owns the tile.
-   b. Weather & Environment: current.
-   c. Faction: blank, unless the tile is owned, in which case the faction that owns the tile.
-   d. Movement: blank, unless the tile is occupied, in which case the first unit in the occupancy list's movement type will be given. (In Advance Wars, only one unit can occupy a tile at a time, but on reflection, I do not see a reason why we should program this limitation into the core engine - this could open the door to features such as allowing air units to fly over ground units).
-   e. Structure: blank, unless the tile makes up part of a structure, in which case the name of the structure.
-   f. Tile: N/A\*.
-   g. Terrain: The type of terrain this tile has^^ (^^: this is a bit redundant, seeing as a tile type always has a fixed terrain type associated with it).
-   h. Unit: blank, unless the tile is occupied, in which case the type of the first unit in the occupancy list.
-   i. Weapon: blank, unless the tile is occupied and the first unit in the occupancy list has at least one weapon, in which case the type of the primary weapon.
+   a. Commander: blank, unless the tile is owned, in which case the commander/s leading the faction that owns the tile.
+   b. Weather: current weather/s.
+   c. Environment: current environment.
+   d. Faction: blank, unless the tile is owned, in which case the faction that owns the tile.
+   e. Movement: blank, unless the tile is occupied, in which case each unit in the occupancy list's movement type will be given. (In Advance Wars, only one unit can occupy a tile at a time, but on reflection, I do not see a reason why we should program this limitation into the core engine - this could open the door to features such as allowing air units to fly over ground units).
+   f. Structure: blank, unless the tile makes up part of a structure, in which case the name of the structure.
+   g. Tile: N/A\*.
+   h. Terrain: The type of terrain this tile has^^ (^^: this is a bit redundant, seeing as a tile type always has a fixed terrain type associated with it).
+   i. Unit: blank, unless the tile is occupied, in which case the type/s of the unit/s in the occupancy list.
+   j. Weapon: blank, unless the tile is occupied, in which case the type/s of the weapon/s across every unit in the occupancy list.
 8. **Terrain**:
    a. Same as Tile, except terrain and tile are reversed.
 9. **Unit**:
-   a. Commander: blank, or the primary commander of the faction that owns the unit.
-   b. Weather & Environment: current.
-   c. Faction: blank, or the faction that owns the unit.
-   d. Movement: the movement type of this unit.
-   e. Structure: blank, unless the unit occupies a tile and it forms part of a structure, in which case the name of the structure.
-   f. Tile: blank, unless the unit occupies a tile, in which case the name of the tile type.
-   g. Terrain: blank, or the name of the tile type's terrain type.
-   h. Unit: N/A\*.
-   i. Weapon: blank, or the primary weapon type^^ (^^: since unit types can't dynamically choose what weapons they have - there wouldn't be a need to anyway seeing as weapons can change any of their properties on a per-unit type basis).
+   a. Commander: blank, or the commander/s of the faction that owns the unit.
+   b. Weather: current weather/s.
+   c. Environment: current environment.
+   d. Faction: blank, or the faction that owns the unit.
+   e. Movement: the movement type of this unit.
+   f. Structure: blank, unless the unit occupies a tile and it forms part of a structure, in which case the name of the structure.
+   g. Tile: blank, unless the unit occupies a tile, in which case the name of the tile type.
+   h. Terrain: blank, or the name of the tile type's terrain type.
+   i. Unit: N/A\*.
+   j. Weapon: blank, or the weapon type/s^^ (^^: since unit types can't dynamically choose what weapons they have - there wouldn't be a need to anyway seeing as weapons can change any of their properties on a per-unit type basis).
 10. **Weapon**:
     a. Commander - Terrain: ditto as Unit, replace "unit" with "unit that has this weapon."
     b. Unit: the type of unit that has this weapon (remember that a weapon can be shared across many different types of units).
@@ -134,7 +137,4 @@ Still concerned about speed with this approach but I'm not sure how else I can i
 
 # Common Property Types
 
--   **Language key** `{String}` Usually a name or a description for the game object, it must be an I18Next key that points to the actual name or description written in the locale files.
--   **URL** `{String}` A path to an asset given in the map pack. Will always be relative to `/path/`.
--   **Sprite** `{Object}` TODO: will contain properties that define which sprite to use from a sprite sheet, but am not sure how this will be achieved using Phaser just yet.
--   **Color** `{Object}` Contains `r`, `g`, `b`, and `a` (optional) keys with number values between 0 and 255.
+Check the typedefs defined in the `objectType.mjs` module for a list of common property types besides simple data types such as numbers and strings.

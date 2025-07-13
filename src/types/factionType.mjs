@@ -1,23 +1,38 @@
 /**
  * @file factionType.mjs
- * Documents the properties required for Faction types.
+ * Defines the properties required for Faction types.
  */
 
 import ObjectType from "#src/types/objectType.mjs";
 
 /**
  * The graphical representation of an army on the map (in Advance Wars these are called countries).
+ * @interface
  */
 export default class FactionType extends ObjectType {
-    /// {Sprite} A faction's small icon.
+    /**
+     * Computes the faction's icon.
+     * @param {import("#src/types/objectType.mjs").Context} context The context the faction is being accessed within.
+     * @returns {import("#src/types/objectType.mjs").Sprite} Identifies the faction's icon.
+     * @abstract
+     */
     icon(context) {}
-    /// {Color} A country's primary color.
+
+    /**
+     * Computes the faction's primary color.
+     * @param {import("#src/types/objectType.mjs").Context} context The context the faction is being accessed within.
+     * @returns {import("#src/types/objectType.mjs").Color} Identifies the faction's primary color.
+     * @abstract
+     */
     color(context) {}
-    /// {Object<Color>} By default, units all use the same sprites, typically using greyscale.
-    ///                 Factions then have the ability to replace specific grey colors with colors of their own, with
-    ///                 the keys in the object storing hex representations of said colors.
-    palette(context) {}
-    /// {Number} The default turn order of the faction (the turn order can change on a per map-basis).
-    ///          Lower numbers means they have their turn before factions that have higher numbers.
+
+    /**
+     * Computes the faction's default turn order.
+     * The higher the turn order number, the later the faction will be in the turn order.
+     * The actual turn order of a faction can change on a per map basis.
+     * @param {import("#src/types/objectType.mjs").Context} context The context the faction is being accessed within.
+     * @returns {Number} The faction's default turn order.
+     * @abstract
+     */
     defaultTurnOrder(context) {}
 }

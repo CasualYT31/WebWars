@@ -1,23 +1,50 @@
 /**
  * @file commanderType.mjs
- * Documents the properties required for Commander types.
+ * Defines the properties required for Commander types.
  */
 
 import ObjectType from "#src/types/objectType.mjs";
 
 /**
  * A commander represents a playable character that controls an army (in Advance Wars these are called COs).
+ * @interface
  */
 export default class CommanderType extends ObjectType {
-    /// {Object<Sprite>} A commander's small icons, typically showing their eyes.
-    //                   Keyed on emotion (e.g. neutral, happy, etc.).
+    /**
+     * Computes the small icons of a commander.
+     * These icons typically just show the commander's eyes.
+     * @param {import("#src/types/objectType.mjs").Context} context The context the commander is being accessed within.
+     * @returns {Object<import("#src/types/objectType.mjs").Sprite>} List of sprites keyed on emotion (e.g. "neutral",
+     *          "happy", "angry", etc.).
+     * @abstract
+     */
     eyes(context) {}
-    /// {Object<Sprite>} A commander's medium icons, typically showing their profile.
-    //                   Keyed on emotion (e.g. neutral, happy, etc.).
+
+    /**
+     * Computes the medium icons of a commander.
+     * These icons typically just show the commander's profile.
+     * @param {import("#src/types/objectType.mjs").Context} context The context the commander is being accessed within.
+     * @returns {Object<import("#src/types/objectType.mjs").Sprite>} List of sprites keyed on emotion (e.g. "neutral",
+     *          "happy", "angry", etc.).
+     * @abstract
+     */
     faces(context) {}
-    /// {Object<Sprite>} A commander's large icons, typically showing their entire body.
-    //                   Keyed on emotion (e.g. neutral, happy, etc.).
+
+    /**
+     * Computes the large icons of a commander.
+     * These icons typically show the commander's entire body.
+     * @param {import("#src/types/objectType.mjs").Context} context The context the commander is being accessed within.
+     * @returns {Object<import("#src/types/objectType.mjs").Sprite>} List of sprites keyed on emotion (e.g. "neutral",
+     *          "happy", "angry", etc.).
+     * @abstract
+     */
     portraits(context) {}
-    /// {URL} A commander's theme that plays in the background whilst they're having their turn.
+
+    /**
+     * Computes the commander's background theme.
+     * @param {import("#src/types/objectType.mjs").Context} context The context the commander is being accessed within.
+     * @returns {import("#src/types/objectType.mjs").Audio} Identifies the commander's theme.
+     * @abstract
+     */
     theme(context) {}
 }

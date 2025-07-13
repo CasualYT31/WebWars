@@ -7,13 +7,13 @@ import FactionType from "#src/types/factionType.mjs";
 
 export class OrangeStar extends FactionType {
     longName(context) {
-        return "ORANGE_COUNTRY_longname";
+        return ["ORANGE_COUNTRY_longname"];
     }
     shortName(context) {
-        return "ORANGE_COUNTRY_shortname";
+        return ["ORANGE_COUNTRY_shortname"];
     }
     description(context) {
-        return "ORANGE_COUNTRY_description";
+        return ["ORANGE_COUNTRY_description"];
     }
     icon(context) {
         return {};
@@ -35,13 +35,13 @@ export class OrangeStar extends FactionType {
 
 export class BlueMoon extends FactionType {
     longName(context) {
-        return "BLUE_COUNTRY_longname";
+        return ["BLUE_COUNTRY_longname"];
     }
     shortName(context) {
-        return "BLUE_COUNTRY_shortname";
+        return ["BLUE_COUNTRY_shortname"];
     }
     description(context) {
-        return "BLUE_COUNTRY_description";
+        return ["BLUE_COUNTRY_description"];
     }
     icon(context) {
         return {};
@@ -63,13 +63,13 @@ export class BlueMoon extends FactionType {
 
 export class GreenEarth extends FactionType {
     longName(context) {
-        return "GREEN_COUNTRY_longname";
+        return ["GREEN_COUNTRY_longname"];
     }
     shortName(context) {
-        return "GREEN_COUNTRY_shortname";
+        return ["GREEN_COUNTRY_shortname"];
     }
     description(context) {
-        return "GREEN_COUNTRY_description";
+        return ["GREEN_COUNTRY_description"];
     }
     icon(context) {
         return {};
@@ -91,13 +91,13 @@ export class GreenEarth extends FactionType {
 
 export class YellowComet extends FactionType {
     longName(context) {
-        return "YELLOW_COUNTRY_longname";
+        return ["YELLOW_COUNTRY_longname"];
     }
     shortName(context) {
-        return "YELLOW_COUNTRY_shortname";
+        return ["YELLOW_COUNTRY_shortname"];
     }
     description(context) {
-        return "YELLOW_COUNTRY_description";
+        return ["YELLOW_COUNTRY_description"];
     }
     icon(context) {
         return {};
@@ -119,13 +119,13 @@ export class YellowComet extends FactionType {
 
 export class BlackHole extends FactionType {
     longName(context) {
-        return "BLACK_COUNTRY_longname";
+        return ["BLACK_COUNTRY_longname"];
     }
     shortName(context) {
-        return "BLACK_COUNTRY_shortname";
+        return ["BLACK_COUNTRY_shortname"];
     }
     description(context) {
-        return "BLACK_COUNTRY_description";
+        return ["BLACK_COUNTRY_description"];
     }
     icon(context) {
         return {};
@@ -147,13 +147,13 @@ export class BlackHole extends FactionType {
 
 export class TwelfthBattalion extends FactionType {
     longName(context) {
-        return "12TH_BATTALION_longname";
+        return ["12TH_BATTALION_longname"];
     }
     shortName(context) {
-        return "12TH_BATTALION_shortname";
+        return ["12TH_BATTALION_shortname"];
     }
     description(context) {
-        return "12TH_BATTALION_description";
+        return ["12TH_BATTALION_description"];
     }
     icon(context) {
         return {};
@@ -175,13 +175,13 @@ export class TwelfthBattalion extends FactionType {
 
 export class LazurianArmy extends FactionType {
     longName(context) {
-        return "LAZURIAN_ARMY_longname";
+        return ["LAZURIAN_ARMY_longname"];
     }
     shortName(context) {
-        return "LAZURIAN_ARMY_shortname";
+        return ["LAZURIAN_ARMY_shortname"];
     }
     description(context) {
-        return "LAZURIAN_ARMY_description";
+        return ["LAZURIAN_ARMY_description"];
     }
     icon(context) {
         return {};
@@ -203,13 +203,13 @@ export class LazurianArmy extends FactionType {
 
 export class NewRubinelleArmy extends FactionType {
     longName(context) {
-        return "NEW_RUBINELLE_ARMY_longname";
+        return ["NEW_RUBINELLE_ARMY_longname"];
     }
     shortName(context) {
-        return "NEW_RUBINELLE_ARMY_shortname";
+        return ["NEW_RUBINELLE_ARMY_shortname"];
     }
     description(context) {
-        return "NEW_RUBINELLE_ARMY_description";
+        return ["NEW_RUBINELLE_ARMY_description"];
     }
     icon(context) {
         return {};
@@ -231,13 +231,13 @@ export class NewRubinelleArmy extends FactionType {
 
 export class IntelligentDefenseSystems extends FactionType {
     longName(context) {
-        return "INTELLIGENT_DEFENSE_SYSTEMS_longname";
+        return ["INTELLIGENT_DEFENSE_SYSTEMS_longname"];
     }
     shortName(context) {
-        return "INTELLIGENT_DEFENSE_SYSTEMS_shortname";
+        return ["INTELLIGENT_DEFENSE_SYSTEMS_shortname"];
     }
     description(context) {
-        return "INTELLIGENT_DEFENSE_SYSTEMS_description";
+        return ["INTELLIGENT_DEFENSE_SYSTEMS_description"];
     }
     icon(context) {
         return {};
@@ -259,13 +259,13 @@ export class IntelligentDefenseSystems extends FactionType {
 
 export class BanditRaiders extends FactionType {
     longName(context) {
-        return "BANDIT_RAIDERS_longname";
+        return ["BANDIT_RAIDERS_longname"];
     }
     shortName(context) {
-        return "BANDIT_RAIDERS_shortname";
+        return ["BANDIT_RAIDERS_shortname"];
     }
     description(context) {
-        return "BANDIT_RAIDERS_description";
+        return ["BANDIT_RAIDERS_description"];
     }
     icon(context) {
         return {};
