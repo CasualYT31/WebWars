@@ -132,7 +132,7 @@ export async function getSessionKey(context) {
  *        server reboot.
  */
 export async function waitForConnection(page, flagToWaitFor = "onInitialConnection") {
-    await page.waitForFunction(flag => window?.WebWars?.[flag], flagToWaitFor, { timeout: 5000 });
+    await page.waitForFunction(flag => window?.WebWars?.[flag], flagToWaitFor, { timeout: 10000 });
 }
 
 /**

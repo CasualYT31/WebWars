@@ -191,15 +191,29 @@ export default class Controller {
         }
         if (typeof modelDefinition.model !== "function") {
             this.#logger.log("error", "Can't add model with invalid model type:", modelDefinition);
+            return;
         }
         if (!modelDefinition.model.prototype instanceof Model) {
             this.#logger.log("error", "Can't add model that doesn't inherit from Model:", modelDefinition);
+            return;
         }
+        if (modelDefinition.model.name in this.#models) {
+            this.#logger.log(
+                "error",
+                `Attempted to add model with name ${modelDefinition.model.name} that already exists ` +
+                    `(modelDefinition, existingModels):`,
+                modelDefinition,
+                Object.keys(this.#models)
+            );
+            return;
+        }
+
         if (!modelDefinition.hasOwnProperty("arguments")) {
             modelDefinition.arguments = [];
         } else if (!Array.isArray(modelDefinition.arguments)) {
             modelDefinition.arguments = [modelDefinition.arguments];
         }
+
         this.#logger.log("debug", "Adding model:", modelDefinition.model.name, ...modelDefinition.arguments);
         let model;
         try {
@@ -208,6 +222,7 @@ export default class Controller {
             this.#logger.log("error", "Failed to add model:", modelDefinition.model.name, e);
             return;
         }
+
         this.#models[modelDefinition.model.name] = model;
         this.#indexMethods(model, true, true);
         this.#commandsToPrependWithSessionKeys.push(...model.prependSessionKeyToCommands);
