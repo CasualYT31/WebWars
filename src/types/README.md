@@ -36,12 +36,13 @@ Each object type is a subclass of one of the subclasses of `ObjectType` that are
    e. Movement - Weapon: N/A^.
 5. **Movement**:
    a. Commander: blank, unless the unit that has this movement type is owned by a faction, in which case the name of the primary commander leading the faction that owns the unit that has this movement type. (In the original Advance Wars, all units required an owner, but on reflection this limitation seems needless, in fact I believe Advance Wars By Web has a hacky method of allowing ownerless units and it is used sometimes by map makers, so providing a proper way to achieve this could be useful).
-   b. Weather - Environment: ditto from Faction.
-   c. Faction: blank, or the name of the faction that owns the unit that has this movement type.
-   d. Movement: N/A\*.
-   e. Structure: blank, except if the unit that has this movement type happens to be on a tile that is part of a structure, in which case the name of the structure will be given.
-   f. Tile: the type of tile that the unit that has this movement type is currently located on.
-   g. Terrain: the type of terrain that the above tile has.
+   b. Weather: current weather.
+   c. Environment: current environment.
+   d. Faction: blank, or the name of the faction that owns the unit that has this movement type.
+   e. Movement: N/A\*.
+   f. Structure: blank, except if the unit that has this movement type happens to be on a tile that is part of a structure, in which case the name of the structure will be given.
+   f. Tile: blank, except if the unit that has this movement type happens to be on a tile, in which case the type of tile that the unit is currently located on.
+   g. Terrain: blank, except if the unit that has this movement type happens to be on a tile, in which case the type of terrain that the tile has.
    h. Unit: the type of unit that has this movement type.
    i. Weapon: the primary weapon of the unit that has this movement type, if the unit type has a weapon.
 6. **Structure**:
@@ -59,7 +60,7 @@ Each object type is a subclass of one of the subclasses of `ObjectType` that are
    b. Weather & Environment: current.
    c. Faction: blank, unless the tile is owned, in which case the faction that owns the tile.
    d. Movement: blank, unless the tile is occupied, in which case the first unit in the occupancy list's movement type will be given. (In Advance Wars, only one unit can occupy a tile at a time, but on reflection, I do not see a reason why we should program this limitation into the core engine - this could open the door to features such as allowing air units to fly over ground units).
-   e. Structure: blank, unless the tile makes up part of a structure, in which case the same of the structure.
+   e. Structure: blank, unless the tile makes up part of a structure, in which case the name of the structure.
    f. Tile: N/A\*.
    g. Terrain: The type of terrain this tile has^^ (^^: this is a bit redundant, seeing as a tile type always has a fixed terrain type associated with it).
    h. Unit: blank, unless the tile is occupied, in which case the type of the first unit in the occupancy list.
@@ -81,7 +82,7 @@ Each object type is a subclass of one of the subclasses of `ObjectType` that are
     b. Unit: the type of unit that has this weapon (remember that a weapon can be shared across many different types of units).
     c. Weapon: N/A\*.
 
-Additionally, the `context` object will hold a reference to the current map in play (and if a tile, army or unit is pertient to that object category (i.e. there isn't a many-to-one relationship that can't be easily reduced), some kind of reference to that tile, army or unit, such as a tile coordinate or some unit ID). This provides even more options for customization, such as being able to tell if the pertinent army's primary commander has their power active.
+Additionally, the `context` object will hold a reference to the current map in play (and if a tile, army or unit is pertinent to that object category (i.e. there isn't a many-to-one relationship that can't be easily reduced), some kind of reference to that tile, army or unit, such as a tile coordinate or some unit ID). This provides even more options for customization, such as being able to tell if the pertinent army's primary commander has their power active.
 
 One limitation to note is that fields that store names of other object types (e.g. "what weapons does this unit type have?" "What type of terrain does this tile type have?" Etc.) CANNOT be changed, since there'd be no way for the engine to know what object type names to give to the context object (could introduce cyclical dependencies), and changing object types is largely irrelevant anyway since you can just make any changes you want on the object type you're referencing (e.g. "change this weapon [drastically] if it belongs to this type of unit," "change this terrain type if the tile whose terrain you're querying is a specific type," etc.).
 
@@ -125,7 +126,7 @@ I mean, unless we _do_ build object types every time they're requested? It's not
 
 Caching object types during an operation, whilst sounding good for performance since you wouldn't need to constantly rebuild the object type every time you accessed a field, _could_ introduce buggy behavior if a change in a game object could trigger a rebuild of an object type that is never retrieved since the operation would still be using the cached object.
 
-Maybe, then, we should only be able to request one field of an object type at a time? The `override()` functions would then need to pass another parameter that stores the name of the field, and the new value would have to be returned instead of editted in-place (since the incoming value could be immutable).
+Maybe, then, we should only be able to request one field of an object type at a time? The `override()` functions would then need to pass another parameter that stores the name of the field, and the new value would have to be returned instead of edited in-place (since the incoming value could be immutable).
 
 Why not just have the `override()` functions? Why store fields in object types as functions? Because I believe logic pertaining to a single field of a single object type should stay with that field. Additionally, it would reduce the conditional checking required in the `override()` function.
 
