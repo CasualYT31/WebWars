@@ -3,6 +3,8 @@
  * Defines the WebSocket communication protocol shared between the server and its clients.
  */
 
+import { deepFreeze } from "./utils.mjs";
+
 /**
  * The types of message that can be sent from a client to the server.
  */
@@ -57,7 +59,7 @@ export function isValidSessionKey(keyToTest) {
  * The error codes used comply with RFC 6455: https://www.rfc-editor.org/rfc/rfc6455.html#section-7.4.
  * Note that reason strings must be no longer than 123 bytes (not characters)!
  */
-export const ClientConnectionClosedReason = Object.freeze({
+export const ClientConnectionClosedReason = deepFreeze({
     /// The server cannot accept the client's connection without exceeding its maximum client connection count setting.
     TooMayClients: {
         code: 4000,

@@ -44,8 +44,11 @@ export function calculatePort(testInfo, basePort) {
  *        whilst the server is running. Once the callback finishes, successfully or due to an error, the server will be
  *        killed. Any errors will be re-raised once the shutdown has finished. The callback will be given the port the
  *        server was opened on.
+ * @param {String} [clientSessionFile=""] By default, no client sessions are loaded or persisted, since the
+ *        --no-client-sessions flag is provided. However, if a file is given to this parameter, the --no-client-sessions
+ *        flag will be removed and a --client-sessions flag will be appended to all options instead.
  */
-export function bootServer(testInfo, basePort, mapPack, options, testCallback) {
+export function bootServer(testInfo, basePort, mapPack, options, testCallback, clientSessionFile = "") {
     return new Promise(async resolve => {
         basePort = calculatePort(testInfo, basePort);
         if (testCallback === undefined && typeof options === "function") {
@@ -62,10 +65,11 @@ export function bootServer(testInfo, basePort, mapPack, options, testCallback) {
                 "trace",
                 "--log-file",
                 `test-results/server-logs/${testInfo.project.name}/${testInfo.titlePath.join("/")}.log`,
-                "--client-sessions",
                 "--map-pack",
                 `test/frontend/${mapPack}`,
-            ].concat(options)
+            ]
+                .concat(options)
+                .concat(clientSessionFile ? ["--client-sessions", clientSessionFile] : ["--no-client-sessions"])
         );
         // Wait until the server has booted.
         server.stdout.on("data", async data => {

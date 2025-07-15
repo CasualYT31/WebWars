@@ -25,12 +25,35 @@ import WeatherType from "#src/types/weatherType.mjs";
  */
 export default class MapManager extends Model {
     /**
-     * When a new client connects, we need to publish our map list to it.
-     * It will be published to everyone but there's no harm in doing so.
-     * @param {String} sessionKey The new client's session key.
+     * Computes the complete front-end version of this model.
+     * @param {String} sessionKey The session key of the client whose front-end model is to be returned.
+     * @returns {Object} The map manager's front-end model.
+     * @override
      */
-    onNewClient(sessionKey) {
-        this.#emitMapFiles();
+    frontEndData(sessionKey) {
+        return {
+            ...this.mapFiles,
+        };
+    }
+
+    /**
+     * @override
+     */
+    emitOnNewClient = ["MapsFolderScanned"];
+
+    /**
+     * @typedef {Object} MapFiles
+     * @property {Array<String>} mapFiles A list of map files that were found during a scan of a map pack.
+     */
+
+    /**
+     * Returns a list of map files read by the map manager during its map pack scan.
+     * @returns {MapFiles} The map files read by the map manager.
+     */
+    get mapFiles() {
+        return {
+            mapFiles: this.#mapFiles,
+        };
     }
 
     /**
@@ -110,7 +133,7 @@ export default class MapManager extends Model {
      */
     #emitMapFiles() {
         this.log("debug", "Emitting map files:", this.#mapFiles);
-        this.event("MapsFolderScanned", this.#mapFiles);
+        this.updateFrontEndDataForEveryone(this.mapFiles, ["MapsFolderScanned", this.#mapFiles]);
     }
 
     #objectTypes = {};

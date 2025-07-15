@@ -14,7 +14,20 @@ import Model from "#src/mvc/model.mjs";
  * language they have selected. Everything the server doesn't care about is stored here.
  */
 export default class FrontEndData extends Model {
-    prependSessionKeyToCommands = ["ReplayPersistedSessionDataIfSessionKeyExists", "OpenMenu", "SetLanguage"];
+    /**
+     * @override
+     */
+    prependSessionKeyToCommands = ["SessionKeyExists", "OpenMenu", "SetLanguage"];
+
+    /**
+     * Computes the complete front-end version of this model.
+     * @param {String} sessionKey The session key of the client whose front-end model is to be returned.
+     * @returns {Object} The front-end data's front-end model.
+     * @override
+     */
+    frontEndData(sessionKey) {
+        return this.#frontEndData[sessionKey] ?? {};
+    }
 
     /**
      * Set up the front end data model.
@@ -28,6 +41,8 @@ export default class FrontEndData extends Model {
      */
     constructor(controller, clientSessionFile = "client-sessions.json", persistClientSessionChanges = true) {
         super(controller);
+        // Populate the new client event list with the events stored in the registered front-end data fields object.
+        this.emitOnNewClient = Object.values(this.#dataKeyProperties).map(dataKey => dataKey.event);
         this.#persistChanges = persistClientSessionChanges;
         // Try to load the persisted session data.
         // If the file can't be opened, assume there is no persisted session data.
@@ -91,23 +106,12 @@ export default class FrontEndData extends Model {
     }
 
     /**
-     * Finds out if a given session key is associated with persisted session data, and replays it via events if it is.
+     * Finds out if a given session key is associated with persisted session data.
      * @param {String} sessionKey The session key to check.
-     * @returns {Boolean} True if the session key had persisted data associated with it, false otherwise.
+     * @returns {Boolean} True if the session key has persisted data associated with it, false otherwise.
      */
-    whenReplayPersistedSessionDataIfSessionKeyExists(sessionKey) {
-        if (!(sessionKey in this.#frontEndData)) {
-            return false;
-        }
-        this.log("debug", "Replaying persisted data for session key:", sessionKey, this.#frontEndData[sessionKey]);
-        for (const dataKey in this.#frontEndData[sessionKey]) {
-            const props = this.#dataKeyProperties[dataKey];
-            const data = this.#frontEndData[sessionKey][dataKey];
-            if (!props.volatile) {
-                this.event(props.event, sessionKey, data);
-            }
-        }
-        return true;
+    whenSessionKeyExists(sessionKey) {
+        return sessionKey in this.#frontEndData;
     }
 
     /**
@@ -172,7 +176,9 @@ export default class FrontEndData extends Model {
             sessionKey
         );
         this.#frontEndData[sessionKey][dataKey] = newData;
-        this.event(props.event, sessionKey, newData);
+        const frontEndDataUpdate = {};
+        frontEndDataUpdate[dataKey] = newData;
+        this.updateFrontEndData(sessionKey, frontEndDataUpdate, [props.event, sessionKey, newData]);
         this.#persistSessionData();
     }
 

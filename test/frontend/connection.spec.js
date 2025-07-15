@@ -47,6 +47,8 @@ import {
  *        file in the maps model to end with this string.
  * @param {String} [options.expectReactMessage="Hello, World"] If expectConnection is true, the map pack's React message
  *        component must be visible and must contain this text.
+ * @param {String} [options.expectMapPackModel="TestModel"] Either "TestModel" or "TestModel2" depending on which map
+ *        pack you're expecting. Both must never exist at the same time.
  * @param {String} [options.expectDisconnectedMessage=""] If given, the disconnected overlay's message must contain this
  *        text, and the expectConnection option will always be set to false.
  * @param {Boolean} options.expectWebSocketToClose If you expect the websocket to close by the end of the call, set this
@@ -131,7 +133,7 @@ async function connectAndTest(context, page, port, options = {}) {
                     async function (options) {
                         const GameEngine = (await import("/gameEngine.mjs")).default;
                         const controller = (await import("/controller.mjs")).default;
-                        const mapFiles = controller.getModel("mapPack").mapFiles;
+                        const mapFiles = controller.getModel("MapManager").mapFiles;
                         if (window.WebWars.gameEngine) {
                             if (options.expectSameGameEngineInstance) {
                                 if (controller.game !== window.WebWars.gameEngine) {
@@ -152,6 +154,43 @@ async function connectAndTest(context, page, port, options = {}) {
                             // Cache a reference to the game engine so that if this function is evaluated again in the
                             // same test, we can test if it's the same instance or not.
                             window.WebWars.gameEngine = controller.game;
+                        }
+                        if (options.expectMapPackModel == "TestModel") {
+                            const testModel = controller.getModel("TestModel");
+                            let testModel2HasNotArrived = false;
+                            try {
+                                controller.getModel("TestModel2");
+                            } catch {
+                                testModel2HasNotArrived = true;
+                            }
+                            if (!testModel2HasNotArrived) {
+                                console.error("TestModel2 has arrived!");
+                                return false;
+                            }
+                            if (testModel.testing !== 123) {
+                                console.error("TestModel did not have the correct contents", JSON.stringify(testModel));
+                                return false;
+                            }
+                        } else {
+                            const testModel2 = controller.getModel("TestModel2");
+                            let testModelHasNotArrived = false;
+                            try {
+                                controller.getModel("TestModel");
+                            } catch {
+                                testModelHasNotArrived = true;
+                            }
+                            if (!testModelHasNotArrived) {
+                                console.error("TestModel has arrived!");
+                                return false;
+                            }
+                            if (testModel2.sessionKey !== options.sessionKey) {
+                                console.error(
+                                    "TestModel2 did not have the correct contents",
+                                    JSON.stringify(testModel2),
+                                    options.sessionKey
+                                );
+                                return false;
+                            }
                         }
                         let sceneList = [];
                         for (const sceneKey in controller.game.scene.keys) {
@@ -177,6 +216,8 @@ async function connectAndTest(context, page, port, options = {}) {
                         expectMapFileToEndWith: options?.expectMapFileToEndWith ?? "test.map",
                         expectSameGameEngineInstance: options?.expectSameGameEngineInstance ?? true,
                         expectScenes: options?.expectScenes ?? ["Pack1"],
+                        expectMapPackModel: options?.expectMapPackModel ?? "TestModel",
+                        sessionKey: sessionKey?.value,
                     }
                 ),
                 "the front-end models and/or game engine weren't initialized"
@@ -187,7 +228,7 @@ async function connectAndTest(context, page, port, options = {}) {
                     const controller = (await import("/controller.mjs")).default;
                     let modelsHaveNotArrived = false;
                     try {
-                        controller.getModel("mapPack");
+                        controller.getModel("MapManager");
                     } catch {
                         modelsHaveNotArrived = true;
                     }
@@ -540,7 +581,7 @@ test.describe("Successful reconnection", () => {
             testInfo,
             4225,
             "connection-map-pack-2",
-            ["--client-sessions", clientSessionsFile, "--do-not-persist-client-sessions", "--keep-log-file"],
+            ["--do-not-persist-client-sessions", "--keep-log-file"],
             async port => {
                 await connectAndTest(context, page, port, {
                     noNavigation: true,
@@ -550,8 +591,10 @@ test.describe("Successful reconnection", () => {
                     expectScenes: ["Pack2"],
                     expectMapFileToEndWith: "test2.map",
                     expectReactMessage: "2Deu",
+                    expectMapPackModel: "TestModel2",
                 });
-            }
+            },
+            clientSessionsFile
         );
     });
 });

@@ -80,10 +80,16 @@ export const optionDefinitions = [
         type: String,
         defaultValue: "client-sessions.json",
         description:
-            "The path to the script that contains the server's persisted client session data. You can provide this " +
-            "option with no value to disable the persistence of client session data (default: client-sessions.json)",
+            "The path to the script that contains the server's persisted client session data (default: " +
+            "client-sessions.json)",
         typeLabel: "{underline [file path]}",
         lazyMultiple: true,
+    },
+    {
+        name: "no-client-sessions",
+        type: Boolean,
+        description: "To disable the loading and persistence of client session data, provide this flag",
+        typeLabel: "",
     },
     {
         name: "do-not-persist-client-sessions",
@@ -171,7 +177,10 @@ if (esMain(import.meta)) {
         models: [
             {
                 model: FrontEndData,
-                arguments: [options["client-sessions"].at(-1), !options["do-not-persist-client-sessions"]],
+                arguments: [
+                    options["no-client-sessions"] ? "" : options["client-sessions"].at(-1),
+                    !options["do-not-persist-client-sessions"],
+                ],
             },
             { model: MapManager },
         ],

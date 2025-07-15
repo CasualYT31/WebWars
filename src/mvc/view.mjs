@@ -6,6 +6,8 @@
 import RandExp from "randexp";
 
 import { ClientMessageType, sendMessage, ServerMessageType, sessionKeyRegex } from "#shared/protocol.mjs";
+import StructuredObjectStore from "#shared/structuredObjectStore.mjs";
+
 import { newLogger } from "#src/logging/logger.mjs";
 
 /**
@@ -24,7 +26,7 @@ export default class View {
     constructor(controller, ws, givenSessionKey) {
         this.#controller = controller;
         let newSessionKey;
-        if (this.#controller.command("ReplayPersistedSessionDataIfSessionKeyExists", givenSessionKey)) {
+        if (this.#controller.command("SessionKeyExists", givenSessionKey)) {
             // This is a session key from a previous run, use the session key and accept the persisted data once the
             // events arrive.
             newSessionKey = givenSessionKey;
@@ -88,7 +90,7 @@ export default class View {
         sendMessage(this.#ws, ServerMessageType.Verified, {
             sessionKey: this.sessionKey,
             bootTimestamp: this.#controller.bootTimestamp,
-            data: this.#sessionData,
+            data: this.#sessionData.clone(),
         });
         return true;
     }
@@ -101,37 +103,53 @@ export default class View {
     }
 
     // MARK: Event handlers
-    // These handlers will convert server-side events into session data updates.
 
     /**
-     * A client must open a new menu.
-     * @param {String} sessionKey The session key of the client that must open a new menu.
-     * @param {String} newComponent The path (relative to `public`) of the JS module script that exports the component
-     *                              to load.
+     * Replaces one of this view's front-end models if the given session key matches the one stored within the view.
+     * @param {String} frontEndModelName The name of the front-end model being replaced (or added if it doesn't exist
+     *        yet).
+     * @param {String} sessionKey The session key of the client whose front-end model is being replaced.
+     * @param {Object} dataStructure Tells the view what structure the front-end model has, dictating how it should
+     *        perform spreading operations in the future.
+     * @param {Object} data The new front-end model.
+     * @param {Array<String>} events A list of server-side events that caused the front-end data replacement. These will
+     *        be re-emitted on the client side.
      */
-    onMenuOpened(sessionKey, newComponent) {
+    onNewFrontEndData(frontEndModelName, sessionKey, dataStructure, data, events) {
         if (this.sessionKey === sessionKey) {
-            this.#queueSessionDataUpdate("ui", { componentModulePath: newComponent }, "onMenuOpened");
+            const replacementUpdate = {
+                type: StructuredObjectStore.UpdateType.Replace,
+                name: frontEndModelName,
+                events: events,
+                structure: dataStructure,
+                data: data,
+            };
+            this.#logger.log("trace", "Queued session data replacement:", JSON.stringify(replacementUpdate));
+            this.#queuedSessionDataUpdates.push(replacementUpdate);
         }
     }
 
     /**
-     * A client must change its language.
-     * @param {String} sessionKey The session key of the client whose language is changing.
-     * @param {String} newLanguage The I18Next key of the language to set.
+     * Updates one of this view's front-end models if the given session key matches the one stored within the view.
+     * @param {String} frontEndModelName The name of the front-end model being updated. No update will occur if the
+     *        model doesn't exist, so make sure a NewFrontEndData event is emitted first.
+     * @param {String | undefined} sessionKey The session key of the client whose front-end model is being updated. If
+     *        a non-string is given, session key checking is disabled and the front-end model will be updated by force.
+     * @param {Object} data Either the new front-end model data, or a partial update for the front-end model.
+     * @param {Array<String>} events A list of server-side events that caused the front-end data update. These will be
+     *        re-emitted on the client side.
      */
-    onLanguageUpdated(sessionKey, newLanguage) {
-        if (this.sessionKey === sessionKey) {
-            this.#queueSessionDataUpdate("ui", { language: newLanguage }, "onLanguageUpdated");
+    onFrontEndDataChange(frontEndModelName, sessionKey, data, events) {
+        if (typeof sessionKey !== "string" || this.sessionKey === sessionKey) {
+            const partialUpdate = {
+                type: StructuredObjectStore.UpdateType.Update,
+                name: frontEndModelName,
+                events: events,
+                updates: data,
+            };
+            this.#logger.log("trace", "Queued session data update:", JSON.stringify(partialUpdate));
+            this.#queuedSessionDataUpdates.push(partialUpdate);
         }
-    }
-
-    /**
-     * A client will receive the list of map files available for loading.
-     * @param {Array<String>} files The paths to the map files in the loaded map pack.
-     */
-    onMapsFolderScanned(files) {
-        this.#queueSessionDataUpdate("mapPack", { mapFiles: files }, "onMapsFolderScanned");
     }
 
     // MARK: Private
@@ -159,21 +177,6 @@ export default class View {
     }
 
     /**
-     * Queues a session data update.
-     * @param {String} partition Name of the partition (i.e. the front-end model) to update.
-     * @param {Object} updates The updates to apply to the partition.
-     * @param {String} event The server-side event that caused the update.
-     */
-    #queueSessionDataUpdate(partition, updates, event) {
-        this.#logger.log("trace", "Queued session data update:", partition, updates, event);
-        this.#queuedSessionDataUpdates.push({
-            partition: partition,
-            updates: updates,
-            event: event,
-        });
-    }
-
-    /**
      * Apply queued session data updates and clear the queue, optionally publishing the data updates.
      */
     #applyQueuedSessionDataUpdates(publish) {
@@ -188,36 +191,19 @@ export default class View {
             `Publish: ${publish}`,
             `Connected: ${this.isConnected()}`
         );
-        let sessionDataUpdates = {};
-        let sessionDataEvents = new Set();
-        // For each queued update...
-        for (const sessionDataUpdate of this.#queuedSessionDataUpdates) {
-            const partition = sessionDataUpdate.partition;
-            const updates = sessionDataUpdate.updates;
-            const event = sessionDataUpdate.event;
-            // 1. add the update to the combined object to be sent to the client,
-            if (partition in sessionDataUpdates) {
-                sessionDataUpdates[partition] = { ...sessionDataUpdates[partition], ...updates };
-            } else {
-                sessionDataUpdates[partition] = updates;
-            }
-            // 2. apply the update to the server's copy of the session data
-            //    (NOTE: whenever you want to create a new front-end model, add it to #sessionData!),
-            this.#sessionData[partition] = { ...this.#sessionData[partition], ...updates };
-            // 3. and keep track of the events that caused the updates.
-            sessionDataEvents.add(event);
-        }
-        sessionDataEvents = Array.from(sessionDataEvents);
-        this.#logger.log("trace", "Applied queued session data updates:", sessionDataUpdates, sessionDataEvents);
-        // Once we've collated every update, push them to the client, and clear the queue.
-        this.#queuedSessionDataUpdates = [];
+
+        this.#sessionData.update(...this.#queuedSessionDataUpdates);
+
         if (publish && this.isConnected()) {
-            this.#logger.log("trace", "Publishing data updates");
-            sendMessage(this.#ws, ServerMessageType.Data, {
-                data: sessionDataUpdates,
-                events: sessionDataEvents,
-            });
+            this.#logger.log(
+                "debug",
+                "Publishing data updates to the client:",
+                JSON.stringify(this.#queuedSessionDataUpdates)
+            );
+            sendMessage(this.#ws, ServerMessageType.Data, { updates: this.#queuedSessionDataUpdates });
         }
+
+        this.#queuedSessionDataUpdates = [];
     }
 
     #logger = null;
@@ -228,11 +214,6 @@ export default class View {
     #ws = null;
     #closed = true;
     #controller = null;
-    #sessionData = {
-        /// Stores data on the UI of the client.
-        ui: {},
-        /// Stores data on the currently loaded map pack.
-        mapPack: {},
-    };
+    #sessionData = new StructuredObjectStore((...args) => this.#logger.log(...args));
     #queuedSessionDataUpdates = [];
 }

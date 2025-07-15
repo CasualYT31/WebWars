@@ -11,6 +11,7 @@ import express from "express";
 import expressWs from "express-ws";
 
 import { ClientConnectionClosedReason } from "#shared/protocol.mjs";
+import { getAllPropertyNames } from "#shared/utils.mjs";
 
 import { newLogger } from "#src/logging/logger.mjs";
 import Model from "#src/mvc/model.mjs";
@@ -229,13 +230,14 @@ export default class Controller {
     }
 
     /**
-     * Scan an object's methods and index their event and command handlers.
+     * Scan an object's methods (including their inherited ones) and index their event and command handlers.
      * @param {Object} object The object to scan.
      * @param {Boolean} events True to scan for event handlers.
      * @param {Boolean} commands True to scan for commands.
      */
     #indexMethods(object, events, commands) {
-        const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(object));
+        const methodNames = getAllPropertyNames(object);
+        this.#logger.log("trace", "Iterating through object methods:", methodNames);
         for (const methodName of methodNames) {
             if (events && methodName.startsWith("on")) {
                 if (this.#eventIndex.hasOwnProperty(methodName)) {

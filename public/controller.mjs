@@ -10,8 +10,9 @@ import {
     isValidSessionKey,
     sendMessage,
 } from "/protocol.mjs";
+import StructuredObjectStore from "/structuredObjectStore.mjs";
+
 import GameEngine from "/gameEngine.mjs";
-import Model from "/model.mjs";
 
 /**
  * Manages the web socket connection between the client and the server.
@@ -24,7 +25,7 @@ class Controller {
         // Register system handlers now (these are never cleared).
         this.#addEventHandler("system", "onMenuOpened", this.#updateRootComponent.bind(this));
         this.#addEventHandler("system", "onLanguageUpdated", () => {
-            const newLanguage = this.getModel("ui").language;
+            const newLanguage = this.getModel("FrontEndData").language;
             console.debug(`Changing language to ${newLanguage} from ${i18next.language}`);
             i18next.changeLanguage(newLanguage);
         });
@@ -51,7 +52,7 @@ class Controller {
      * @returns {Object} The front-end model's read-only data.
      */
     getModel(name) {
-        return this.#models[name].data;
+        return this.#models.getObject(name);
     }
 
     /**
@@ -187,6 +188,8 @@ class Controller {
                     this.#sessionKey = newSessionKey;
                     this.#serverVerified = true;
                     this.#hideDisconnectedOverlay();
+                    // We could now be entering asynchronous code within the state machine, so lock the models.
+                    this.#lockModels();
                     if (this.#bootTimestamp === null) {
                         // This is the client's first time connecting to a server, simply record the server's boot
                         // timestamp so that if the client disconnects then reconnects to the server, it will know
@@ -208,7 +211,15 @@ class Controller {
                     }
                     break;
                 case ServerMessageType.Data:
-                    this.#updateModelsAndEmitEvents(decodedMessage.payload.data, decodedMessage.payload.events);
+                    if (this.#modelLock > 0) {
+                        console.debug(
+                            `Deferring model updates, model lock counter is at ${this.#modelLock}`,
+                            ...decodedMessage.payload.updates
+                        );
+                        this.#modelUpdateQueue.push(...decodedMessage.payload.updates);
+                    } else {
+                        this.#updateModels(...decodedMessage.payload.updates);
+                    }
                     break;
                 default:
                     throw new Error(`Unrecognized server message type ${decodedMessage.type}!`);
@@ -275,7 +286,7 @@ class Controller {
      * @param {Object} incomingData The model data given by the server that the client must store.
      */
     #onInitialConnection(incomingData) {
-        this.#updateModelsAndEmitEventsOnConnection(incomingData);
+        this.#resetModels(incomingData);
         console.debug("Initializing the game engine");
         this.#gameEngine = new GameEngine();
         this.#importMapPackEntryPoint();
@@ -302,17 +313,18 @@ class Controller {
      * previously imported map pack's main entry point module, if it exists, will be called upon to synchronize the
      * state of the client with the new state of the server. If it doesn't exist, another attempt to import it will be
      * made, and the onInitialConnection() handler will be invoked instead if the module could be imported.
-     * @param {Object} incomingData The model data given by the server that the client must apply to what it has stored
-     *        already.
+     * @param {Object} incomingData The model data given by the server that the client must reset the structured object
+     *        store with.
      */
     #onReconnection(incomingData) {
-        this.#updateModelsAndEmitEventsOnConnection(incomingData);
+        this.#resetModels(incomingData);
         console.debug("Resuming the game engine");
         this.game.resume();
         this.#showReactRootElement();
         if (this.#mapPackEntryPoint) {
             console.debug("Invoking map pack's onReconnection handler");
             this.#mapPackEntryPoint.onReconnection();
+            this.#unlockModels();
         } else {
             this.#importMapPackEntryPoint();
         }
@@ -325,8 +337,7 @@ class Controller {
      *        model data it has with this data.
      */
     #onSubsequentConnection(incomingData) {
-        console.debug("Deleting all front-end models");
-        this.#models = {};
+        this.#resetModels();
         this.#unloadRootComponent();
         this.#showReactRootElement();
         console.debug("Deleting stale map pack entry point module");
@@ -378,50 +389,56 @@ class Controller {
                     "Once the error has been corrected, you will need to refresh the page to try importing the " +
                         "module again."
                 );
-            });
+            })
+            .finally(() => this.#unlockModels());
     }
 
     // MARK: Model and Event Handling
 
     /**
-     * Update the front-end models whenever the client [re]connects to the server.
-     * The map pack will have its own connection handlers responsible for reading the incoming model data and updating
-     * the state of the client, so there's no need to emit many events right now. We still emit the onLanguageUpdated
-     * event to update the language used by i18next which will always be initialized regardless of the connection
-     * transition in play. And we also emit the onMenuOpened event to allow the controller to initialize the root React
-     * component based on the currently assigned menu, if any.
-     * @param {Object} incomingData Incoming model changes to apply.
+     * Lock access to the models.
+     * In one or two circumstances, we can't immediately handle a Data message from the server. For example, when we're
+     * in the middle of handling a Verify message. Sometimes the code is synchronous and there are no issues, but the
+     * subsequent connection handler contains asynchronous code (destroying the game engine, and also importing the
+     * map pack's entry point module). For example, in between when:
+     *  - the models are reset and the game engine is marked for destruction,
+     *  - and when the game engine has finally been destroyed and we continue on with the onInitialConnection logic
+     *    using the data provided by the Verify message,
+     * a Data message may have arrived and been processed. But that Data message relies on the Verify message's data
+     * having been applied already, which it hasn't, and it shouldn't be considered to be completely handled until the
+     * map pack's entry point module has been imported and executed appropriately. So during the handling of a Verify
+     * message, we increment the modelLock counter, which, when > 0, causes incoming Data messages to be queued instead
+     * of handled immediately. Then, once we know the Verify message has been handled, we decrement the counter and
+     * flush the queue once it reaches zero.
      */
-    #updateModelsAndEmitEventsOnConnection(incomingData) {
-        this.#updateModelsAndEmitEvents(incomingData, ["onLanguageUpdated", "onMenuOpened"]);
+    #lockModels() {
+        ++this.#modelLock;
+        console.debug(`Locking access to the models, counter is now at ${this.#modelLock}`);
     }
 
     /**
-     * Update the front-end models, then emit events to the "views" via their registered handlers.
-     * @param {Object} incomingData Incoming model changes to apply.
-     * @param {Array<String>} incomingEvents The server-side events that caused the model changes.
+     * Unlocks access to the models.
+     * Must be called once the Verify message from a server has been handled by the controller.
      */
-    #updateModelsAndEmitEvents(incomingData, incomingEvents = []) {
-        for (const modelName in incomingData) {
-            if (this.#models.hasOwnProperty(modelName)) {
-                console.debug(`Updating model "${modelName}"`, incomingData[modelName]);
-                this.#models[modelName].update(incomingData[modelName]);
-            } else {
-                console.debug(`Creating model "${modelName}"`, incomingData[modelName]);
-                this.#models[modelName] = new Model(incomingData[modelName]);
-            }
+    #unlockModels() {
+        console.debug(`Unlocking access to the models, counter was ${this.#modelLock}`);
+        if (--this.#modelLock <= 0) {
+            this.#modelLock = 0;
+            console.debug(
+                `Unlocked access to the models. Applying ${this.#modelUpdateQueue.length} deferred model update/s`,
+                this.#modelUpdateQueue
+            );
+            this.#updateModels(...this.#modelUpdateQueue);
+            this.#modelUpdateQueue = [];
         }
-        for (const event of incomingEvents) {
-            console.debug(`Dispatching event "${event}"`);
-            for (const handlerType in this.#eventHandlers) {
-                const handlers = this.#eventHandlers[handlerType];
-                if (event in handlers) {
-                    for (const handler of handlers[event]) {
-                        handler();
-                    }
-                }
-            }
-        }
+    }
+
+    /**
+     * Update the front-end models, and emit events to the "views" via their registered handlers.
+     * @param {...Object} incomingUpdates Incoming model changes to apply.
+     */
+    #updateModels(...incomingUpdates) {
+        this.#models.update(...incomingUpdates);
     }
 
     /**
@@ -452,6 +469,72 @@ class Controller {
     #clearEventHandlers(handlerType) {
         console.debug(`Clearing ${handlerType} event handlers`);
         this.#eventHandlers[`${handlerType}Handlers`] = {};
+    }
+
+    /**
+     * Invoked when the structured object store (i.e. the model manager) wants to write to the logs.
+     * @param {String} level The level to log at.
+     * @param {...any} args The objects to log.
+     */
+    #modelLogHandler(level, ...args) {
+        switch (level) {
+            case "fatal":
+            case "error":
+                console.error(...args);
+                break;
+            case "warn":
+                console.warn(...args);
+                break;
+            case "info":
+                console.log(...args);
+                break;
+            case "debug":
+                console.debug(...args);
+                break;
+            case "trace":
+                console.trace(...args);
+                break;
+            default:
+                console.log(...args);
+        }
+    }
+
+    /**
+     * Invoked when incoming model updates contain events that should be emitted to the front-end view code.
+     * @param {...String} events The list of events to emit.
+     */
+    #emitModelEvents(...events) {
+        for (let event of events) {
+            event = `on${event}`;
+            console.debug(`Dispatching event "${event}"`);
+            for (const handlerType in this.#eventHandlers) {
+                const handlers = this.#eventHandlers[handlerType];
+                if (event in handlers) {
+                    for (const handler of handlers[event]) {
+                        handler();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Resets the state of the models, with the option to reinitialize it with a structured object store clone.
+     * @param {Object | undefined} clone A structured object store clone sent by the server to initialize the front-end
+     *        models with, if any.
+     */
+    #resetModels(clone) {
+        if (clone) {
+            console.debug("Resetting models using a clone provided by the server", clone);
+        } else {
+            console.debug("Erasing all models");
+        }
+        this.#models = new StructuredObjectStore(
+            (...args) => this.#modelLogHandler(...args),
+            (...events) => this.#emitModelEvents(...events),
+            clone
+        );
+        this.#models.emitEventsAfterConstruction();
     }
 
     // MARK: React Component Management
@@ -499,7 +582,7 @@ class Controller {
      */
     #updateRootComponent() {
         // Dynamically import the new root component.
-        const componentModulePath = this.getModel("ui").componentModulePath;
+        const componentModulePath = this.getModel("FrontEndData").componentModulePath;
         if (!componentModulePath) {
             console.error(
                 `Attempting to set the root React component to "${componentModulePath}", which is invalid. Taking no ` +
@@ -575,7 +658,10 @@ class Controller {
     #ws = null;
     #serverVerified = false;
 
-    #models = {};
+    #models = null;
+    #modelLock = 0;
+    #modelUpdateQueue = [];
+
     #eventHandlers = {
         systemHandlers: {},
         componentHandlers: {},
