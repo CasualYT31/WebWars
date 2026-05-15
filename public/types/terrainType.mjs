@@ -1,9 +1,9 @@
 /**
  * @file terrainType.mjs
- * Defines the back-end properties required for Terrain types.
+ * Defines the front-end properties required for Terrain types.
  */
 
-import ObjectType from "#src/types/objectType.mjs";
+import ObjectType from "/types/objectType.mjs";
 
 /**
  * Defines the characteristics of tile types.

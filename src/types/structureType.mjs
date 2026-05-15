@@ -1,6 +1,6 @@
 /**
  * @file structureType.mjs
- * Defines the properties required for Structure types.
+ * Defines the back-end properties required for Structure types.
  */
 
 import ObjectType from "#src/types/objectType.mjs";
@@ -22,29 +22,10 @@ import ObjectType from "#src/types/objectType.mjs";
  */
 
 /**
- * @typedef {Object} DestroyedProperties
- * @property {import("#src/types/objectType.mjs").LanguageKey} longName The long name of the structure when it is
- *           destroyed.
- * @property {import("#src/types/objectType.mjs").LanguageKey} shortName The short name of the structure when it is
- *           destroyed.
- * @property {import("#src/types/objectType.mjs").LanguageKey} description The description of the structure when it is
- *           destroyed.
- * @property {import("#src/types/objectType.mjs").Sprite} icon The icon of the structure when it is destroyed.
- */
-
-/**
  * A structure is a group of tiles, made up of a root tile and zero or more dependent tiles.
  * @interface
  */
 export default class StructureType extends ObjectType {
-    /**
-     * Computes the structure's medium-sized icon.
-     * @param {import("#src/types/objectType.mjs").Context} context The context the structure is being accessed within.
-     * @returns {import("#src/types/objectType.mjs").Sprite} Identifies the structure's icon.
-     * @abstract
-     */
-    icon(context) {}
-
     /**
      * Computes the properties of the structure's root tile.
      * @param {import("#src/types/objectType.mjs").Context} context The context the structure is being accessed within.
@@ -70,12 +51,4 @@ export default class StructureType extends ObjectType {
      * @abstract
      */
     keepUnitsWhenPainted(context) {}
-
-    /**
-     * Computes the properties of the structure when it is in a destroyed state.
-     * @param {import("#src/types/objectType.mjs").Context} context The context the structure is being accessed within.
-     * @returns {DestroyedProperties} The computed properties.
-     * @abstract
-     */
-    destroyed(context) {}
 }

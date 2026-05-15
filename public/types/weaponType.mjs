@@ -1,9 +1,9 @@
 /**
  * @file weaponType.mjs
- * Defines the back-end properties required for Weapon types.
+ * Defines the front-end properties required for Weapon types.
  */
 
-import ObjectType from "#src/types/objectType.mjs";
+import ObjectType from "/types/objectType.mjs";
 
 /**
  * Units may wield at least one type of weapon; this base class defines the properties that weapons are required to

@@ -11,13 +11,4 @@ import ObjectType from "#src/types/objectType.mjs";
  * these movement types actually influence movement.
  * @interface
  */
-export default class MovementType extends ObjectType {
-    /**
-     * Computes the movement type's icon.
-     * @param {import("#src/types/objectType.mjs").Context} context The context the movement type is being accessed
-     *        within.
-     * @returns {import("#src/types/objectType.mjs").Sprite} Identifies the movement type's icon.
-     * @abstract
-     */
-    icon(context) {}
-}
+export default class MovementType extends ObjectType {}
