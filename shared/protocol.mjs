@@ -27,8 +27,8 @@ export const ServerMessageType = Object.freeze({
 /**
  * Send a message over a WebSocket connection.
  * @param {WebSocket} ws The WebSocket to send the message over.
- * @param {String} type The type of client message to send.
- * @param {Object} payload The JSON object to serialize.
+ * @param {string} type The type of client message to send.
+ * @param {object} payload The JSON object to serialize.
  */
 export function sendMessage(ws, type, payload = {}) {
     ws.send(
@@ -47,8 +47,8 @@ export const sessionKeyRegex = /^[0-9a-f]{16}$/;
 /**
  * Test if a given variable could contain a valid session key.
  * This function only tests the format of the session key.
- * @param {String} keyToTest The session key to test.
- * @returns {Boolean} Is the given string in a valid session key format?
+ * @param {string} keyToTest The session key to test.
+ * @returns {boolean} Is the given string in a valid session key format?
  */
 export function isValidSessionKey(keyToTest) {
     return sessionKeyRegex.test(keyToTest);

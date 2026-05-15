@@ -21,7 +21,7 @@ export default class View {
      * Creates a new client session with a unique session key.
      * @param {Controller} controller Reference to the controller that owns this view.
      * @param {WebSocket} ws The web socket connection associated with this client session.
-     * @param {String} givenSessionKey The session key that the client gave on connection. Empty if they gave none.
+     * @param {string} givenSessionKey The session key that the client gave on connection. Empty if they gave none.
      */
     constructor(controller, ws, givenSessionKey) {
         this.#controller = controller;
@@ -47,7 +47,7 @@ export default class View {
 
     /**
      * Finds out if the client associated with this session is still connected to the server via web socket.
-     * @returns {Boolean} Is the client still connected to the server?
+     * @returns {boolean} Is the client still connected to the server?
      */
     isConnected() {
         return this.#ws && !this.#closed;
@@ -57,7 +57,7 @@ export default class View {
      * Attempts to assign a new web socket connection to this view.
      * This view will reject the new web socket if its current one hasn't closed yet.
      * @param {WebSocket} ws The new web socket connection associated with this view.
-     * @returns {Boolean} True if the new web socket was assigned successfully, false if not.
+     * @returns {boolean} True if the new web socket was assigned successfully, false if not.
      */
     attemptToReplaceWebSocket(ws) {
         // WEB-6:
@@ -106,13 +106,13 @@ export default class View {
 
     /**
      * Replaces one of this view's front-end models if the given session key matches the one stored within the view.
-     * @param {String} frontEndModelName The name of the front-end model being replaced (or added if it doesn't exist
+     * @param {string} frontEndModelName The name of the front-end model being replaced (or added if it doesn't exist
      *        yet).
-     * @param {String} sessionKey The session key of the client whose front-end model is being replaced.
-     * @param {Object} dataStructure Tells the view what structure the front-end model has, dictating how it should
+     * @param {string} sessionKey The session key of the client whose front-end model is being replaced.
+     * @param {object} dataStructure Tells the view what structure the front-end model has, dictating how it should
      *        perform spreading operations in the future.
-     * @param {Object} data The new front-end model.
-     * @param {Array<String>} events A list of server-side events that caused the front-end data replacement. These will
+     * @param {object} data The new front-end model.
+     * @param {string[]} events A list of server-side events that caused the front-end data replacement. These will
      *        be re-emitted on the client side.
      */
     onNewFrontEndData(frontEndModelName, sessionKey, dataStructure, data, events) {
@@ -131,12 +131,12 @@ export default class View {
 
     /**
      * Updates one of this view's front-end models if the given session key matches the one stored within the view.
-     * @param {String} frontEndModelName The name of the front-end model being updated. No update will occur if the
+     * @param {string} frontEndModelName The name of the front-end model being updated. No update will occur if the
      *        model doesn't exist, so make sure a NewFrontEndData event is emitted first.
-     * @param {String | undefined} sessionKey The session key of the client whose front-end model is being updated. If
+     * @param {string | undefined} sessionKey The session key of the client whose front-end model is being updated. If
      *        a non-string is given, session key checking is disabled and the front-end model will be updated by force.
-     * @param {Object} data Either the new front-end model data, or a partial update for the front-end model.
-     * @param {Array<String>} events A list of server-side events that caused the front-end data update. These will be
+     * @param {object} data Either the new front-end model data, or a partial update for the front-end model.
+     * @param {string[]} events A list of server-side events that caused the front-end data update. These will be
      *        re-emitted on the client side.
      */
     onFrontEndDataChange(frontEndModelName, sessionKey, data, events) {
@@ -156,7 +156,7 @@ export default class View {
 
     /**
      * The client message handler.
-     * @param {String} msg The message sent by the client.
+     * @param {string} msg The message sent by the client.
      * @throws Any errors thrown from this handler will be caught and logged.
      */
     #handleMessage(msg) {

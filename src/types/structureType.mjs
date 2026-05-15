@@ -6,14 +6,14 @@
 import ObjectType from "#src/types/objectType.mjs";
 
 /**
- * @typedef {Object} RootTile
- * @property {String} tile The type of the root tile.
- * @property {String} destroyed The type of the root tile when the structure is destroyed.
- * @property {String} deleted The type to set the root tile to when the structure is deleted in the map maker.
+ * @typedef {object} RootTile
+ * @property {string} tile The type of the root tile.
+ * @property {string} destroyed The type of the root tile when the structure is destroyed.
+ * @property {string} deleted The type to set the root tile to when the structure is deleted in the map maker.
  */
 
 /**
- * @typedef {Object} DependentTile
+ * @typedef {object} DependentTile
  * @extends RootTile
  * @property {import("#src/types/objectType.mjs").Coordinate} offset The coordinate of the dependent tile relative to
  *           the root tile. E.g. { x: 1, y: 0 } means this dependent tile is one tile to the right of the root tile. At
@@ -37,7 +37,7 @@ export default class StructureType extends ObjectType {
     /**
      * Computes the properties of the structure's dependent tiles.
      * @param {import("#src/types/objectType.mjs").Context} context The context the structure is being accessed within.
-     * @returns {Array<DependentTile>} The structure's dependent tiles, if any.
+     * @returns {DependentTile[]} The structure's dependent tiles, if any.
      * @abstract
      */
     dependents(context) {}
@@ -46,7 +46,7 @@ export default class StructureType extends ObjectType {
      * Determines whether or not units in the map maker that occupy one of a newly painted structure's tile should be
      * deleted.
      * @param {import("#src/types/objectType.mjs").Context} context The context the structure is being accessed within.
-     * @returns {Boolean} If false, units that occupy the structure's tiles will be deleted. If true, they will not be
+     * @returns {boolean} If false, units that occupy the structure's tiles will be deleted. If true, they will not be
      *          deleted.
      * @abstract
      */

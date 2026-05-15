@@ -15,7 +15,7 @@ export default class FactionType extends ObjectType {
      * The higher the turn order number, the later the faction will be in the turn order.
      * The actual turn order of a faction can change on a per map basis.
      * @param {import("#src/types/objectType.mjs").Context} context The context the faction is being accessed within.
-     * @returns {Number} The faction's default turn order.
+     * @returns {number} The faction's default turn order.
      * @abstract
      */
     defaultTurnOrder(context) {}

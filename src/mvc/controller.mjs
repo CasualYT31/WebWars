@@ -22,40 +22,41 @@ import View from "#src/mvc/view.mjs";
  */
 export default class Controller {
     /**
-     * @typedef {Object} WebServerFile
-     * @property {String} path The relative path to the file on disk to serve.
-     * @property {String} root Where the path is relative to.
-     * @property {String} url The URL path to the file.
+     * @typedef {object} WebServerFile
+     * @property {string} path The relative path to the file on disk to serve.
+     * @property {string} root Where the path is relative to.
+     * @property {string} url The URL path to the file.
      */
 
     /**
-     * @typedef {Object} WebServerFolder
-     * @property {String} path The folder on disk to serve.
-     * @property {String} url The URL path to map to the folder.
+     * @typedef {object} WebServerFolder
+     * @property {string} path The folder on disk to serve.
+     * @property {string} url The URL path to map to the folder.
      */
 
     /**
-     * @typedef {Object} ModelDefinition
+     * @typedef {object} ModelDefinition
      * @property {Model.constructor} model The Model-based class to instantiate and attach to a controller.
-     * @property {Array<Any>} [arguments=[]] Additional arguments to pass to the model when it's constructed. These will
-     *           come after any mandatory Model arguments.
+     * @property {any[]} [arguments=[]] Additional arguments to pass to the model when it's constructed. These will come
+     *           after any mandatory Model arguments.
      */
 
     /**
      * Hooks up all of the given models, sets up the client session pool (the views), and starts the server.
-     * @param {Object} options Configures the controller.
-     * @param {Number} [options.port=80] The port to open the server on.
-     * @param {Array<WebServerFile>} [options.files=[]] The files to serve.
-     * @param {Array<WebServerFolder>} [options.folders=[]] The folders to serve static files from.
-     * @param {Boolean} [options.noServer=false] Pass true to stop the server from spinning up.
-     * @param {Function} [options.onServerUp=(port) => {}] Execute custom code when the server has been fully set up.
-     * @param {Array<ModelDefinition>} [options.models=[]] The Model-based classes to instantiate and attach to this
+     * @param {object} options Configures the controller.
+     * @param {number} [options.port=80] The port to open the server on.
+     * @param {WebServerFile[]} [options.files=[]] The files to serve.
+     * @param {WebServerFolder[]} [options.folders=[]] The folders to serve static files from.
+     * @param {boolean} [options.noServer=false] Pass true to stop the server from spinning up.
+     * @param {(number) => void} [options.onServerUp=(port) => {}] Execute custom code when the server has been fully
+     *        set up.
+     * @param {ModelDefinition[]} [options.models=[]] The Model-based classes to instantiate and attach to this
      *        controller.
-     * @param {Number} [options.eventDispatchRate=40] Milliseconds that must elapse between event dispatches at a
+     * @param {number} [options.eventDispatchRate=40] Milliseconds that must elapse between event dispatches at a
      *        minimum. Directly dictates how fast the game should run.
-     * @param {Number} [options.maxClientSessions=16] The maximum number of clients that can be connected to the server
+     * @param {number} [options.maxClientSessions=16] The maximum number of clients that can be connected to the server
      *        at a time.
-     * @param {String} [options.mapPackPath=""] A path to a map pack to load with this server. It must be relative to
+     * @param {string} [options.mapPackPath=""] A path to a map pack to load with this server. It must be relative to
      *        the CWD.
      */
     constructor(options = {}) {
@@ -83,7 +84,7 @@ export default class Controller {
 
     /**
      * Sends a command to the controller.
-     * @param {String} name The name of the command. Must be in PascalCase.
+     * @param {string} name The name of the command. Must be in PascalCase.
      * @param {...any} data The data to send to the command.
      * @returns {any} The value returned by the command.
      */
@@ -95,8 +96,8 @@ export default class Controller {
 
     /**
      * Find out if a command wants a session key as its first argument.
-     * @param {String} name The name of the command to test.
-     * @returns {Boolean} True if the command must be given a session key as the first argument, false if not.
+     * @param {string} name The name of the command to test.
+     * @returns {boolean} True if the command must be given a session key as the first argument, false if not.
      */
     mustGiveSessionKeyWithCommand(name) {
         return this.#commandsToPrependWithSessionKeys.includes(name);
@@ -104,7 +105,7 @@ export default class Controller {
 
     /**
      * Used by models to emit events to the rest of the system.
-     * @param {String} name The name of the event. Must be in PascalCase.
+     * @param {string} name The name of the event. Must be in PascalCase.
      * @param {...any} data The data to attach to the event.
      */
     event(name, ...data) {
@@ -115,7 +116,7 @@ export default class Controller {
 
     /**
      * Retrieve a model that was instantiated by this controller.
-     * @param {String} name The name of the model (i.e. its class name in string form).
+     * @param {string} name The name of the model (i.e. its class name in string form).
      * @returns {Model} Reference to the model instance owned by this controller.
      */
     getModel(name) {
@@ -124,7 +125,7 @@ export default class Controller {
 
     /**
      * Does a view with the given session key already exist?
-     * @param {String} key Session key to test.
+     * @param {string} key Session key to test.
      */
     doesSessionKeyExist(key) {
         return Object.keys(this.#views).includes(key);
@@ -172,7 +173,7 @@ export default class Controller {
 
     /**
      * Sets up the back-end models.
-     * @param {Array<ModelDefinition>} modelDefinitions The definitions of the models to instantiate.
+     * @param {ModelDefinition>} modelDefinitions The definitions of the models to instantiate.
      */
     #setupModels(modelDefinitions) {
         this.#logger.log("trace", "Setting up the models");
@@ -194,7 +195,7 @@ export default class Controller {
             this.#logger.log("error", "Can't add model with invalid model type:", modelDefinition);
             return;
         }
-        if (!modelDefinition.model.prototype instanceof Model) {
+        if ((!modelDefinition.model.prototype) instanceof Model) {
             this.#logger.log("error", "Can't add model that doesn't inherit from Model:", modelDefinition);
             return;
         }
@@ -231,9 +232,9 @@ export default class Controller {
 
     /**
      * Scan an object's methods (including their inherited ones) and index their event and command handlers.
-     * @param {Object} object The object to scan.
-     * @param {Boolean} events True to scan for event handlers.
-     * @param {Boolean} commands True to scan for commands.
+     * @param {object} object The object to scan.
+     * @param {boolean} events True to scan for event handlers.
+     * @param {boolean} commands True to scan for commands.
      */
     #indexMethods(object, events, commands) {
         const methodNames = getAllPropertyNames(object);
@@ -262,7 +263,7 @@ export default class Controller {
      * Asynchronously loads the given map pack.
      * If the given map pack was valid, this method will emit a MapPackLoaded event after fully loading the pack. It
      * will be emitted with the full path of the map pack attached as well as its exports.mjs module.
-     * @param {String} mapPackPath Path to the map pack to load.
+     * @param {string} mapPackPath Path to the map pack to load.
      */
     #loadMapPack(mapPackPath) {
         this.#logger.log("info", "Loading map pack:", mapPackPath);
@@ -296,7 +297,7 @@ export default class Controller {
 
     /**
      * Sets up the server.
-     * @param {Object} options The options passed to the constructor.
+     * @param {object} options The options passed to the constructor.
      */
     #setupServer(options) {
         this.#logger.log("trace", "Setting up the server");
@@ -368,8 +369,8 @@ export default class Controller {
      * Either creates a new view for a new web socket connection, or attaches a new web socket connection to an existing
      * view.
      * @param {WebSocket} ws The new web socket connection to try to associate with this view.
-     * @param {String} sessionKey The client's incoming session key.
-     * @param {Number} maxClientCount The maximum number of views that can be present.
+     * @param {string} sessionKey The client's incoming session key.
+     * @param {number} maxClientCount The maximum number of views that can be present.
      */
     #setupView(ws, sessionKey, maxClientCount) {
         this.#logger.log("info", "New client connected. It has given the session key:", sessionKey);
@@ -425,7 +426,7 @@ export default class Controller {
      * Returns when the controller was constructed.
      * Views read this timestamp and pass it to verified clients. Clients use this timestamp to detect when the server
      * has rebooted. Whenever the server reboots, the clients should reset their state in a similar fashion.
-     * @returns {Number} The number of milliseconds since epoch when this controller was constructed.
+     * @returns {number} The number of milliseconds since epoch when this controller was constructed.
      */
     get bootTimestamp() {
         return this.#bootTimestamp;

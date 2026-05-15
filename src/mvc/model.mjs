@@ -59,7 +59,7 @@ export default class Model {
 
     /**
      * Emits an event from this model and publishes it to every model and view attached to the controller.
-     * @param {String} name The name of the event to emit to every model and view.
+     * @param {string} name The name of the event to emit to every model and view.
      * @param {...any} data The data to attached to the event.
      */
     event(name, ...data) {
@@ -68,9 +68,9 @@ export default class Model {
 
     /**
      * Emit multiple events from this model.
-     * @param {...Array} events The events to fire. Each array must be the arguments given directly to a this.event()
+     * @param {...any[]} events The events to fire. Each array must be the arguments given directly to a this.event()
      *        call.
-     * @returns {Array<String>} The names of the events fired.
+     * @returns {string[]} The names of the events fired.
      */
     events(...events) {
         const eventNames = [];
@@ -86,7 +86,7 @@ export default class Model {
      * This is achieved by passing a frozen object as the first argument to the object's constructor. This object will
      * contain a single function called "event" that has the same signature as Model.event. The new object can then
      * store this frozen object and emit events whenever it likes.
-     * @param {Function} type The type of object to instantiate.
+     * @param {Object.constructor} type The type of object to instantiate.
      * @param {...any} params The parameters to pass to the object's constructor (after the "emitter" object).
      * @returns {any} A new object of the given type.
      */
@@ -102,7 +102,7 @@ export default class Model {
     /**
      * Every model has a default NewClient event handler that pushes the model's front-end data to the new client, as
      * well as a list of initial front-end events to emit.
-     * @param {String} sessionKey The new client's session key.
+     * @param {string} sessionKey The new client's session key.
      * @see Model.emitOnNewClient
      */
     onNewClient(sessionKey) {
@@ -118,8 +118,8 @@ export default class Model {
 
     /**
      * Publishes the entirety of the model's front-end data for a given client, alongside its [new] structure.
-     * @param {String} sessionKey The client to replace the front-end model of.
-     * @param {...Array} events A list of additional events to emit alongside the NewFrontEndData event. Each array must
+     * @param {string} sessionKey The client to replace the front-end model of.
+     * @param {...any[]} events A list of additional events to emit alongside the NewFrontEndData event. Each array must
      *        be the arguments given to a this.event() call. Each event name given in these arrays will also be added to
      *        the NewFrontEndData event so that client controllers know which events to emit on their end.
      */
@@ -139,11 +139,11 @@ export default class Model {
 
     /**
      * Publishes an update to the model's front-end data for a given client.
-     * @param {String} sessionKey The client to update the front-end model of.
-     * @param {Object} data The changes to the front-end data to publish. May or may not be the result of
+     * @param {string} sessionKey The client to update the front-end model of.
+     * @param {object} data The changes to the front-end data to publish. May or may not be the result of
      *        this.frontEndData(). If it is not, then a partial update is published. Partial updates must have the same
      *        structure/hierarchy as the one defined by this.frontEndDataStructure().
-     * @param {...Array} events A list of additional events to emit alongside the FrontEndDataChange event. Each array
+     * @param {...any[]} events A list of additional events to emit alongside the FrontEndDataChange event. Each array
      *        must be the arguments given to a this.event() call. Each event name given in these arrays will also be
      *        added to the FrontEndDataChange event so that client controllers know which events to emit on their end.
      */
@@ -160,10 +160,10 @@ export default class Model {
 
     /**
      * Publishes an update to the model's front-end data for every client.
-     * @param {Object} data The changes to the front-end data to publish. May or may not be the result of
+     * @param {object} data The changes to the front-end data to publish. May or may not be the result of
      *        this.frontEndData(). If it is not, then a partial update is published. Partial updates must have the same
      *        structure/hierarchy as the one defined by this.frontEndDataStructure().
-     * @param {...Array} events A list of additional events to emit alongside the FrontEndDataChange event. Each array
+     * @param {...any[]} events A list of additional events to emit alongside the FrontEndDataChange event. Each array
      *        must be the arguments given to a this.event() call. Each event name given in these arrays will also be
      *        added to the FrontEndDataChange event so that client controllers know which events to emit on their end.
      */
@@ -262,7 +262,7 @@ export default class Model {
      * }
      * instead of publishing the entire "largeObject", since the structure defines that "largeObject" and some of its
      * inner objects require individual spreading.
-     * @returns {Object} Defines the structure of this model's front-end counterpart.
+     * @returns {object} Defines the structure of this model's front-end counterpart.
      * @abstract
      */
     frontEndDataStructure() {
@@ -271,8 +271,8 @@ export default class Model {
 
     /**
      * Returns the complete front-end version of this model that's sent to a given client.
-     * @param {String} sessionKey The client to compute the front-end model of.
-     * @returns {Object} The model's front-end version of the data it stores.
+     * @param {string} sessionKey The client to compute the front-end model of.
+     * @returns {object} The model's front-end version of the data it stores.
      * @abstract
      */
     frontEndData(sessionKey) {

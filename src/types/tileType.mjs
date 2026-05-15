@@ -13,7 +13,7 @@ export default class TileType extends ObjectType {
     /**
      * The name of the type of terrain this tile has.
      * @param {import("#src/types/objectType.mjs").Context} context The context the tile type is being accessed within.
-     * @returns {String} Identifies the tile's terrain.
+     * @returns {string} Identifies the tile's terrain.
      * @abstract
      */
     terrain(context) {}

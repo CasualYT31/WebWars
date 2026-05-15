@@ -35,10 +35,10 @@ export default class GameEngine extends Phaser.Game {
 
     /**
      * Calculates the center coordinate of the canvas.
-     * @param {Number} x The offset to apply in the X direction.
-     * @param {Number} y The offset to apply in the Y direction.
-     * @returns {Array<Number>} A two element array containing the calculated X and Y coordinates that can be spread
-     *          across function calls that expect separate X and Y arguments.
+     * @param {number} x The offset to apply in the X direction.
+     * @param {number} y The offset to apply in the Y direction.
+     * @returns {number[]} A two element array containing the calculated X and Y coordinates that can be spread across
+     *          function calls that expect separate X and Y arguments.
      */
     center(x = 0.0, y = 0.0) {
         return [this.#centerCoordinate[0] + x, this.#centerCoordinate[1] + y];

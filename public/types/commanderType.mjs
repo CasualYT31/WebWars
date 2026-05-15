@@ -13,8 +13,9 @@ export default class CommanderType extends ObjectType {
     /**
      * Computes the small icons of a commander.
      * These icons typically just show the commander's eyes.
-     * @param {Context} context The context the commander is being accessed within.
-     * @returns {Object<Sprite>} List of sprites keyed on emotion (e.g. "neutral", "happy", "angry", etc.).
+     * @param {import("./objectType.mjs").Context} context The context the commander is being accessed within.
+     * @returns {Record<string, import("./objectType.mjs").Sprite>} List of sprites keyed on emotion (e.g. "neutral",
+     *          "happy", "angry", etc.).
      * @abstract
      */
     eyes(context) {}
@@ -22,8 +23,9 @@ export default class CommanderType extends ObjectType {
     /**
      * Computes the medium icons of a commander.
      * These icons typically just show the commander's profile.
-     * @param {Context} context The context the commander is being accessed within.
-     * @returns {Object<Sprite>} List of sprites keyed on emotion (e.g. "neutral", "happy", "angry", etc.).
+     * @param {import("./objectType.mjs").Context} context The context the commander is being accessed within.
+     * @returns {Record<string, import("./objectType.mjs").Sprite>} List of sprites keyed on emotion (e.g. "neutral",
+     *          "happy", "angry", etc.).
      * @abstract
      */
     faces(context) {}
@@ -31,16 +33,17 @@ export default class CommanderType extends ObjectType {
     /**
      * Computes the large icons of a commander.
      * These icons typically show the commander's entire body.
-     * @param {Context} context The context the commander is being accessed within.
-     * @returns {Object<Sprite>} List of sprites keyed on emotion (e.g. "neutral", "happy", "angry", etc.).
+     * @param {import("./objectType.mjs").Context} context The context the commander is being accessed within.
+     * @returns {Record<string, import("./objectType.mjs").Sprite>} List of sprites keyed on emotion (e.g. "neutral",
+     *          "happy", "angry", etc.).
      * @abstract
      */
     portraits(context) {}
 
     /**
      * Computes the commander's background theme.
-     * @param {Context} context The context the commander is being accessed within.
-     * @returns {Audio} Identifies the commander's theme.
+     * @param {import("./objectType.mjs").Context} context The context the commander is being accessed within.
+     * @returns {import("./objectType.mjs").Audio} Identifies the commander's theme.
      * @abstract
      */
     theme(context) {}

@@ -21,8 +21,8 @@ export default class FrontEndData extends Model {
 
     /**
      * Computes the complete front-end version of this model.
-     * @param {String} sessionKey The session key of the client whose front-end model is to be returned.
-     * @returns {Object} The front-end data's front-end model.
+     * @param {string} sessionKey The session key of the client whose front-end model is to be returned.
+     * @returns {object} The front-end data's front-end model.
      * @override
      */
     frontEndData(sessionKey) {
@@ -32,10 +32,10 @@ export default class FrontEndData extends Model {
     /**
      * Set up the front end data model.
      * @param {Controller} controller The controller to pass to the super constructor.
-     * @param {String} [clientSessionFile="client-sessions.json"] The path to read client session data from. Session
+     * @param {string} [clientSessionFile="client-sessions.json"] The path to read client session data from. Session
      *        data will also be written to this file. If a blank string is given, client session data will not be
      *        persisted nor will it be loaded from anywhere.
-     * @param {Boolean} [persistClientSessionChanges=true] If true, and a file is given, client sessions will be
+     * @param {boolean} [persistClientSessionChanges=true] If true, and a file is given, client sessions will be
      *        persisted to the file every time they are updated. If false, or if no file is given, client session
      *        changes will never be persisted.
      */
@@ -107,8 +107,8 @@ export default class FrontEndData extends Model {
 
     /**
      * Finds out if a given session key is associated with persisted session data.
-     * @param {String} sessionKey The session key to check.
-     * @returns {Boolean} True if the session key has persisted data associated with it, false otherwise.
+     * @param {string} sessionKey The session key to check.
+     * @returns {boolean} True if the session key has persisted data associated with it, false otherwise.
      */
     whenSessionKeyExists(sessionKey) {
         return sessionKey in this.#frontEndData;
@@ -116,10 +116,10 @@ export default class FrontEndData extends Model {
 
     /**
      * Instructs the front end to open a new menu.
-     * @param {String} sessionKey The session key of the client who must open a new menu.
-     * @param {String} newComponent The path (relative to `public`) of the JS module script that exports the component
+     * @param {string} sessionKey The session key of the client who must open a new menu.
+     * @param {string} newComponent The path (relative to `public`) of the JS module script that exports the component
      *                              to load.
-     * @param {Boolean} forceOpen If false, and the client's session data already has a menu open, don't open the given
+     * @param {boolean} forceOpen If false, and the client's session data already has a menu open, don't open the given
      *                            menu.
      */
     whenOpenMenu(sessionKey, newComponent, forceOpen = true) {
@@ -131,8 +131,8 @@ export default class FrontEndData extends Model {
 
     /**
      * Instructs the front end to change their language.
-     * @param {String} sessionKey The session key of the client whose language is being updated.
-     * @param {String} newLanguage The language to set.
+     * @param {string} sessionKey The session key of the client whose language is being updated.
+     * @param {string} newLanguage The language to set.
      */
     whenSetLanguage(sessionKey, newLanguage) {
         this.#setFrontEndData(sessionKey, "language", newLanguage);
@@ -140,8 +140,8 @@ export default class FrontEndData extends Model {
 
     /**
      * Updates a client's front-end data and emits a matching event.
-     * @param {String} sessionKey The session key of the client whose data must be updated.
-     * @param {String} dataKey The key of the data that must be updated.
+     * @param {string} sessionKey The session key of the client whose data must be updated.
+     * @param {string} dataKey The key of the data that must be updated.
      * @param {any} newData The new data to assign.
      */
     #setFrontEndData(sessionKey, dataKey, newData) {

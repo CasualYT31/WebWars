@@ -7,20 +7,20 @@ import StructuredObject from "./structuredObject.mjs";
 import { deepFreeze } from "./utils.mjs";
 
 /**
- * @typedef {Object} StructuredObjectReplacement
- * @property {String} [type=StructuredObjectStore.UpdateType.Replace] The type of StructuredObjectUpdate.
- * @property {String} name The name of the StructuredObject to add/replace.
- * @property {Array<String>} events A list of events that caused the replacement.
- * @property {Object} structure The structure of the object.
- * @property {Object} data The data of the object.
+ * @typedef {object} StructuredObjectReplacement
+ * @property {string} [type=StructuredObjectStore.UpdateType.Replace] The type of StructuredObjectUpdate.
+ * @property {string} name The name of the StructuredObject to add/replace.
+ * @property {string[]} events A list of events that caused the replacement.
+ * @property {object} structure The structure of the object.
+ * @property {object} data The data of the object.
  */
 
 /**
- * @typedef {Object} StructuredObjectUpdate
- * @property {String} [type=StructuredObjectStore.UpdateType.Update] The type of StructuredObjectUpdate.
- * @property {String} name The name of the StructuredObject to update.
- * @property {Array<String>} events A list of events that caused the update.
- * @property {Object} updates The updates to apply.
+ * @typedef {object} StructuredObjectUpdate
+ * @property {string} [type=StructuredObjectStore.UpdateType.Update] The type of StructuredObjectUpdate.
+ * @property {string} name The name of the StructuredObject to update.
+ * @property {string[]} events A list of events that caused the update.
+ * @property {object} updates The updates to apply.
  */
 
 /**
@@ -43,11 +43,11 @@ export default class StructuredObjectStore {
 
     /**
      * Constructs a new collection of named StructuredObjects.
-     * @param {Function<String, ...any>} onLog Callback invoked when this class wants to log something. The level is
+     * @param {(string, ...any) => void} onLog Callback invoked when this class wants to log something. The level is
      *        given, then the objects to log. By default requests to log are ignored.
-     * @param {Function<...String>} onEvents Callback invoked after an update object is processed, where the events
+     * @param {(...string) => voidFunction<...String>} onEvents Callback invoked after an update object is processed, where the events
      *        array of that update object is spread into the callback's arguments. By default events are ignored.
-     * @param {Object | undefined} [clone=undefined] If given, the store will be initialized with the given structured
+     * @param {object | undefined} [clone=undefined] If given, the store will be initialized with the given structured
      *        objects. This argument must receive the result of a call to clone(). Any events given to structured
      *        objects upon construction (i.e. via a replacement) must be emitted via a separate call to
      *        emitEventsAfterConstruction().
@@ -64,8 +64,8 @@ export default class StructuredObjectStore {
 
     /**
      * Retrieves a StructuredObject's data.
-     * @param {String} name The name of the StructuredObject to retrieve the read-only data of.
-     * @returns {Object} The underlying StructuredObject's data attribute.
+     * @param {string} name The name of the StructuredObject to retrieve the read-only data of.
+     * @returns {object} The underlying StructuredObject's data attribute.
      */
     getObject(name) {
         return this.#store[name].data;
@@ -73,7 +73,7 @@ export default class StructuredObjectStore {
 
     /**
      * Generates a clone of this store that can be used to construct a new StructuredObjectStore.
-     * @returns {Object} A clone of each structured object in the store. Each structured object will have an entry in
+     * @returns {object} A clone of each structured object in the store. Each structured object will have an entry in
      *          the clone under their name, and each entry will be an array of arguments that are to be given to the
      *          StructuredObject constructor. The clone will be deep frozen.
      */

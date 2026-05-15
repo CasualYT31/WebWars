@@ -14,8 +14,8 @@ import ObjectType from "/types/objectType.mjs";
 export default class MovementType extends ObjectType {
     /**
      * Computes the movement type's icon.
-     * @param {Context} context The context the movement type is being accessed within.
-     * @returns {Sprite} Identifies the movement type's icon.
+     * @param {import("./objectType.mjs").Context} context The context the movement type is being accessed within.
+     * @returns {import("./objectType.mjs").Sprite} Identifies the movement type's icon.
      * @abstract
      */
     icon(context) {}

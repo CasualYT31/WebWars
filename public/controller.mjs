@@ -48,8 +48,8 @@ class Controller {
 
     /**
      * Retrieves a reference to the given model's read-only data.
-     * @param {String} name The name of the front-end model to retrieve.
-     * @returns {Object} The front-end model's read-only data.
+     * @param {string} name The name of the front-end model to retrieve.
+     * @returns {object} The front-end model's read-only data.
      */
     getModel(name) {
         return this.#models.getObject(name);
@@ -61,8 +61,8 @@ class Controller {
      * Note that the controller will automatically remove a component's event handler if it knows that the component has
      * been unloaded, so there's no need to remove it yourself or worry about if the handler is already present when
      * your component is reloaded (in this case it will add it again like normal).
-     * @param {String | Array<String>} events The name/s of the event/s to handle.
-     * @param {Function} handler The function to call when the server emits these events.
+     * @param {string | string[]} events The name/s of the event/s to handle.
+     * @param {() => void} handler The function to call when the server emits these events.
      */
     updateComponentWhen(events, handler) {
         if (!Array.isArray(events)) {
@@ -80,8 +80,8 @@ class Controller {
      * Note that the controller will only ever remove scene handlers whenever the game engine is reinitialized. As soon
      * as you add a scene handler it will be present for the duration of the game. Also note that scene events will
      * always be emitted even if the scene/s the handler is logically associated with is/are inactive.
-     * @param {String | Array<String>} events The name/s of the event/s to handle.
-     * @param {Function} handler The function to call when the server emits these events.
+     * @param {string | string[]} events The name/s of the event/s to handle.
+     * @param {() => void} handler The function to call when the server emits these events.
      */
     updateSceneWhen(events, handler) {
         if (!Array.isArray(events)) {
@@ -94,7 +94,7 @@ class Controller {
 
     /**
      * Sends a command to the server.
-     * @param {String} name The name of the command to execute.
+     * @param {string} name The name of the command to execute.
      * @param {...any} data The parameters to send with the command.
      */
     command(name, ...data) {
@@ -131,8 +131,8 @@ class Controller {
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import#module_namespace_object.
      * @warning Note that this approach of dynamically importing modules leaks memory upon subsequent connections, but
      *          there's no way around this currently.
-     * @param {String} uri The URI of the module to dynamically import.
-     * @returns {Promise<Object>} Resolves to the dynamically imported module.
+     * @param {string} uri The URI of the module to dynamically import.
+     * @returns {Promise<object>} Resolves to the dynamically imported module.
      */
     #import(uri) {
         return import(uri + `?t=${this.#bootTimestamp}`);
@@ -283,7 +283,7 @@ class Controller {
      * Sets up the game engine and tries to import the current map pack's main entry point module. Then, it will try to
      * invoke its onInitialConnection() handler, but it won't if it or the onReconnection() handler aren't defined.
      * This method assumes that the controller's state is as it was on construction (i.e. default initialized).
-     * @param {Object} incomingData The model data given by the server that the client must store.
+     * @param {object} incomingData The model data given by the server that the client must store.
      */
     #onInitialConnection(incomingData) {
         this.#resetModels(incomingData);
@@ -313,7 +313,7 @@ class Controller {
      * previously imported map pack's main entry point module, if it exists, will be called upon to synchronize the
      * state of the client with the new state of the server. If it doesn't exist, another attempt to import it will be
      * made, and the onInitialConnection() handler will be invoked instead if the module could be imported.
-     * @param {Object} incomingData The model data given by the server that the client must reset the structured object
+     * @param {object} incomingData The model data given by the server that the client must reset the structured object
      *        store with.
      */
     #onReconnection(incomingData) {
@@ -333,7 +333,7 @@ class Controller {
     /**
      * Invoked when the client reconnects to the server and the client detects that the server has rebooted.
      * The client must reset its entire state before executing the #onInitialConnection() logic.
-     * @param {Object} incomingData The model data given by the server. The client must completely replace any existing
+     * @param {object} incomingData The model data given by the server. The client must completely replace any existing
      *        model data it has with this data.
      */
     #onSubsequentConnection(incomingData) {
@@ -435,7 +435,7 @@ class Controller {
 
     /**
      * Update the front-end models, and emit events to the "views" via their registered handlers.
-     * @param {...Object} incomingUpdates Incoming model changes to apply.
+     * @param {...object} incomingUpdates Incoming model changes to apply.
      */
     #updateModels(...incomingUpdates) {
         this.#models.update(...incomingUpdates);
@@ -443,9 +443,9 @@ class Controller {
 
     /**
      * Adds an event handler.
-     * @param {String} handlerType "system", "component" or "scene".
-     * @param {String} event The name of the event to add a handler for.
-     * @param {Function} handler The callback that is invoked when the event is fired.
+     * @param {string} handlerType "system", "component" or "scene".
+     * @param {string} event The name of the event to add a handler for.
+     * @param {() => void} handler The callback that is invoked when the event is fired.
      */
     #addEventHandler(handlerType, event, handler) {
         if (!event.startsWith("on")) {
@@ -464,7 +464,7 @@ class Controller {
      * Removes all existing component or scene event handlers.
      * Component event handlers should be removed whenever an existing root component is removed.
      * Scene event handlers should be removed whenever the game engine is destroyed.
-     * @param {String} handlerType "component" or "scene" ("system" handlers must never be cleared).
+     * @param {string} handlerType "component" or "scene" ("system" handlers must never be cleared).
      */
     #clearEventHandlers(handlerType) {
         console.debug(`Clearing ${handlerType} event handlers`);
@@ -473,7 +473,7 @@ class Controller {
 
     /**
      * Invoked when the structured object store (i.e. the model manager) wants to write to the logs.
-     * @param {String} level The level to log at.
+     * @param {string} level The level to log at.
      * @param {...any} args The objects to log.
      */
     #modelLogHandler(level, ...args) {
@@ -501,7 +501,7 @@ class Controller {
 
     /**
      * Invoked when incoming model updates contain events that should be emitted to the front-end view code.
-     * @param {...String} events The list of events to emit.
+     * @param {...string} events The list of events to emit.
      */
     #emitModelEvents(...events) {
         for (let event of events) {
@@ -520,7 +520,7 @@ class Controller {
 
     /**
      * Resets the state of the models, with the option to reinitialize it with a structured object store clone.
-     * @param {Object | undefined} clone A structured object store clone sent by the server to initialize the front-end
+     * @param {object | undefined} clone A structured object store clone sent by the server to initialize the front-end
      *        models with, if any.
      */
     #resetModels(clone) {
@@ -624,7 +624,7 @@ class Controller {
 
     /**
      * Shows the disconnected overlay.
-     * @param {...String} messages If given, the disconnected overlay's message will also be updated. Each string will
+     * @param {...string} messages If given, the disconnected overlay's message will also be updated. Each string will
      *        be joined with two newline characters.
      */
     #showDisconnectedOverlay(...messages) {

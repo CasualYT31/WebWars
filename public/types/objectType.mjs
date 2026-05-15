@@ -4,27 +4,27 @@
  */
 
 /**
- * @typedef {Object} Coordinate
- * @property {Number} x The x coordinate.
- * @property {Number} y The y coordinate.
+ * @typedef {object} Coordinate
+ * @property {number} x The x coordinate.
+ * @property {number} y The y coordinate.
  */
 
 /**
- * @typedef {Object} Context
- * @property {Array<String>} commanders The name/s of the commander/s that are in some way tied to the property request.
- * @property {Array<String>} weathers The name/s of the weather/s that are in some way tied to the property request.
- * @property {Array<String>} environments The name/s of the environment/s that are in some way tied to the property
+ * @typedef {object} Context
+ * @property {string[]} commanders The name/s of the commander/s that are in some way tied to the property request.
+ * @property {string[]} weathers The name/s of the weather/s that are in some way tied to the property request.
+ * @property {string[]} environments The name/s of the environment/s that are in some way tied to the property
  *           request. Note that this array will never be larger than one in the current implementation of the core
  *           engine.
- * @property {Array<String>} factions The name/s of the faction/s that are in some way tied to the property request.
- * @property {Array<String>} movements The name/s of the movement type/s that are in some way tied to the property
+ * @property {string[]} factions The name/s of the faction/s that are in some way tied to the property request.
+ * @property {string[]} movements The name/s of the movement type/s that are in some way tied to the property
  *           request.
- * @property {Array<String>} structures The name/s of the structure/s that are in some way tied to the property request.
- * @property {Array<String>} tiles The name/s of the tile type/s that are in some way tied to the property request.
- * @property {Array<String>} terrains The name/s of the terrain/s that are in some way tied to the property request.
- * @property {Array<String>} units The name/s of the unit type/s that are in some way tied to the property request.
- * @property {Array<String>} weapons The name/s of the weapon/s that are in some way tied to the property request.
- * @property {Object | undefined} map The front-end model of the map, if any, that the object type is within.
+ * @property {string[]} structures The name/s of the structure/s that are in some way tied to the property request.
+ * @property {string[]} tiles The name/s of the tile type/s that are in some way tied to the property request.
+ * @property {string[]} terrains The name/s of the terrain/s that are in some way tied to the property request.
+ * @property {string[]} units The name/s of the unit type/s that are in some way tied to the property request.
+ * @property {string[]} weapons The name/s of the weapon/s that are in some way tied to the property request.
+ * @property {object | undefined} map The front-end model of the map, if any, that the object type is within.
  * @property {UnitID | undefined} unit An identifier for a unit, if any, that is in some way tied to the property
  *           request.
  * @property {Coordinate | undefined} tile The coordinates of a tile, if any, that is in some way tied to the property
@@ -34,7 +34,7 @@
  */
 
 /**
- * @typedef {Array} LanguageKey
+ * @typedef {any[]} LanguageKey
  * Usually a name or a description for the game object; it must contain at least an I18Next key that points to the
  * actual name or description written in the locale files.
  * The array is expected to be the parameters given directly to the `i18next.t()` call, opening up support for
@@ -42,7 +42,7 @@
  */
 
 /**
- * @typedef {String} URL
+ * @typedef {string} URL
  * A path to an asset given in the map pack.
  * Will always be relative to `/path/`.
  */
@@ -76,7 +76,7 @@
  */
 
 /**
- * @typedef {Object} Color
+ * @typedef {object} Color
  * Contains `r`, `g`, `b`, and `a` (optional) keys with number values between 0 and 255.
  */
 

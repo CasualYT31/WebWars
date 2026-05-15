@@ -26,8 +26,8 @@ import WeatherType from "#src/types/weatherType.mjs";
 export default class MapManager extends Model {
     /**
      * Computes the complete front-end version of this model.
-     * @param {String} sessionKey The session key of the client whose front-end model is to be returned.
-     * @returns {Object} The map manager's front-end model.
+     * @param {string} sessionKey The session key of the client whose front-end model is to be returned.
+     * @returns {object} The map manager's front-end model.
      * @override
      */
     frontEndData(sessionKey) {
@@ -42,8 +42,8 @@ export default class MapManager extends Model {
     emitOnNewClient = ["MapsFolderScanned"];
 
     /**
-     * @typedef {Object} MapFiles
-     * @property {Array<String>} mapFiles A list of map files that were found during a scan of a map pack.
+     * @typedef {object} MapFiles
+     * @property {string[]} mapFiles A list of map files that were found during a scan of a map pack.
      */
 
     /**
@@ -59,8 +59,8 @@ export default class MapManager extends Model {
     /**
      * Allows the map pack to define what types of units, terrains, etc. it supports, and where its map files are
      * stored.
-     * @param {String} mapPackPath The full path to the loaded map pack.
-     * @param {Object} mapPackModule The exports defined by the loaded map pack.
+     * @param {string} mapPackPath The full path to the loaded map pack.
+     * @param {object} mapPackModule The exports defined by the loaded map pack.
      */
     onMapPackLoaded(mapPackPath, mapPackModule) {
         this.log("info", "Loading map pack:", mapPackPath);
@@ -90,7 +90,7 @@ export default class MapManager extends Model {
                 `length: ${mapPackModule[arrayName].length}`
             );
             mapPackModule[arrayName].forEach(type => {
-                if (!type.prototype instanceof category) {
+                if ((!type.prototype) instanceof category) {
                     this.log(
                         "error",
                         `Object type ${type.name} does not extend ${category.name} even though it is of category ` +
@@ -122,7 +122,7 @@ export default class MapManager extends Model {
 
     /**
      * Loads a binary map file using the current map pack's exported information.
-     * @param {String} mapFilePath Path to the map file to load.
+     * @param {string} mapFilePath Path to the map file to load.
      */
     whenLoadMap(mapFilePath) {
         console.log(mapFilePath);

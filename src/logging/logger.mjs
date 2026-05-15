@@ -10,7 +10,7 @@ let logFilepath = undefined;
 
 /**
  * Creates a new logger object.
- * @param {String} name The name of the logger.
+ * @param {string} name The name of the logger.
  * @returns {pino.Logger} The logger instance.
  */
 export function newLogger(name) {
@@ -48,8 +48,8 @@ export function newLogger(name) {
      * I wrote this method because the existing methods don't seem to output multiple objects if given, so I decided to
      * write them as an array directly instead, if more than a message is given. I also wanted a way to automatically
      * attach a stacktrace to error logs.
-     * @param {String} lvl The level to log at.
-     * @param {String} message The message should come first.
+     * @param {string} lvl The level to log at.
+     * @param {string} message The message should come first.
      * @param {...any} objs The objects to log with the message.
      */
     loggerObject.log = (lvl, message, ...objs) => {
@@ -75,7 +75,7 @@ export function newLogger(name) {
 /**
  * Updates the log level.
  * Make sure to set this first before you create your loggers!
- * @param {String} level The new log level to set, either the name of the log level or a corresponding number level in
+ * @param {string} level The new log level to set, either the name of the log level or a corresponding number level in
  *                       string form.
  */
 export function setLogLevel(level) {

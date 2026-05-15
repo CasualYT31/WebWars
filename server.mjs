@@ -131,7 +131,7 @@ export const usageSections = [
 /**
  * Parses the command-line arguments given by the user and returns them.
  * If the help argument is given, the usage documentation will be printed, and the game will close.
- * @returns {Object} The options provided by the user.
+ * @returns {object} The options provided by the user.
  */
 export function getCommandLineArguments() {
     const options = commandLineArgs(optionDefinitions);

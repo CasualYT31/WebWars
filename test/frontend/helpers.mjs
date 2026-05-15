@@ -12,9 +12,9 @@ import { ClientMessageType, sendMessage, ServerMessageType } from "#shared/proto
 /**
  * Calculates a unique port for a worker based on a base port and the project the worker is running with.
  * @param {import("@playwright/test").TestInfo} testInfo Information on the currently running test.
- * @param {Number} basePort The base port the server will be running on. An offset based on the project the test is
+ * @param {number} basePort The base port the server will be running on. An offset based on the project the test is
  *        running in will be applied. Aim to have your base ports be divisible by 25 to account for this.
- * @returns {Number} The base port, offset.
+ * @returns {number} The base port, offset.
  */
 export function calculatePort(testInfo, basePort) {
     const portOffset = testInfo.project.metadata.portOffset;
@@ -28,6 +28,10 @@ export function calculatePort(testInfo, basePort) {
 }
 
 /**
+ * @typedef {(number) => Promise<void>} TestCallback
+ */
+
+/**
  * Boots the web server.
  * Unfortunately, it isn't possible to boot web servers on a per project basis via configuration alone:
  * https://github.com/microsoft/playwright/issues/22496. I need this to ensure one project doesn't influence the state
@@ -35,16 +39,16 @@ export function calculatePort(testInfo, basePort) {
  * server to reboot with a different configuration, which also doesn't seem possible to achieve without having manual
  * control over the boot process.
  * @param {import("@playwright/test").TestInfo} testInfo Information on the currently running test.
- * @param {Number} basePort The base port the server will be running on. An offset based on the project the test is
+ * @param {number} basePort The base port the server will be running on. An offset based on the project the test is
  *        running in will be applied. Aim to have your base ports be divisible by 25 to account for this.
- * @param {String} mapPack Path to the map pack to load, relative to test/frontend.
- * @param {Array<String>} options Additional options. The testCallback parameter can take its place if you have no need
- *        for them.
- * @param {Function} testCallback Invoked after the server has booted. It will include all of the tests you wish to run
- *        whilst the server is running. Once the callback finishes, successfully or due to an error, the server will be
- *        killed. Any errors will be re-raised once the shutdown has finished. The callback will be given the port the
- *        server was opened on.
- * @param {String} [clientSessionFile=""] By default, no client sessions are loaded or persisted, since the
+ * @param {string} mapPack Path to the map pack to load, relative to test/frontend.
+ * @param {string[] | TestCallback} options Additional options. The testCallback parameter can take its place if you
+ *        have no need for them.
+ * @param {TestCallback} testCallback Invoked after the server has booted. It will include all of the tests you wish to
+ *        run whilst the server is running. Once the callback finishes, successfully or due to an error, the server will
+ *        be killed. Any errors will be re-raised once the shutdown has finished. The callback will be given the port
+ *        the server was opened on.
+ * @param {string} [clientSessionFile=""] By default, no client sessions are loaded or persisted, since the
  *        --no-client-sessions flag is provided. However, if a file is given to this parameter, the --no-client-sessions
  *        flag will be removed and a --client-sessions flag will be appended to all options instead.
  */
@@ -89,7 +93,7 @@ export function bootServer(testInfo, basePort, mapPack, options, testCallback, c
  * Opens the game in a given page and waits for the controller to initialize.
  * All E2E tests should invoke this function before anything else.
  * @param {import("@playwright/test").Page} page The page to open the game in.
- * @param {String} [url=""] The host pointing to the server to connect to. Defaults to the baseURL.
+ * @param {string} [url=""] The host pointing to the server to connect to. Defaults to the baseURL.
  */
 export async function openGame(page, url = "") {
     await page.goto(url);
@@ -99,7 +103,7 @@ export async function openGame(page, url = "") {
 /**
  * Adds a session key to the browser's cookies.
  * @param {import("@playwright/test").BrowserContext} context The browser context running the game.
- * @param {String} key The key to add to the browser's cookies.
+ * @param {string} key The key to add to the browser's cookies.
  */
 export async function addSessionKey(context, key) {
     await context.addCookies([
@@ -131,7 +135,7 @@ export async function getSessionKey(context) {
 /**
  * Waits for the client to connect to and be verified with the server.
  * @param {import("@playwright/test").Page} page The page running the game.
- * @param {String} [flagToWaitFor="onInitialConnection"] The flag to wait for. Defaults to initial connection, but it
+ * @param {string} [flagToWaitFor="onInitialConnection"] The flag to wait for. Defaults to initial connection, but it
  *        can be set to onReconnection to wait for the client to fully reconnect after a connection drop without a
  *        server reboot.
  */
@@ -156,8 +160,8 @@ export function controller(page) {
          * Retrieves a copy of a read-only front-end model by name.
          * Front-end models will never contain data that can't be serialized using JSON since the back end sent it to
          * the front end using JSON to begin with.
-         * @param {String} name The name of the model.
-         * @returns {Promise<Object>} The model's data.
+         * @param {string} name The name of the model.
+         * @returns {Promise<object>} The model's data.
          */
         getModel: async name =>
             await page.evaluate(async function (name) {
@@ -169,11 +173,11 @@ export function controller(page) {
 
 /**
  * Connects to a WebWars server via websocket, sends commands to it, then disconnects.
- * @param {Number} port The port the server is running on.
- * @param {String} sessionKey The session key to connect with.
- * @param {...Array} commands The commands to send, each in the form of an array. The first element stores the name of
+ * @param {number} port The port the server is running on.
+ * @param {string} sessionKey The session key to connect with.
+ * @param {...any[]} commands The commands to send, each in the form of an array. The first element stores the name of
  *        the command, and subsequent elements will be sent as arguments.
- * @returns {Promise} Promise that's resolved when all commands have been sent to the server.
+ * @returns {Promise<void>} Promise that's resolved when all commands have been sent to the server.
  */
 export function sendCommands(port, sessionKey, ...commands) {
     return new Promise(resolve => {

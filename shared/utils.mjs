@@ -5,8 +5,8 @@
 
 /**
  * Recursively freezes a given object.
- * @param {Object} object The object to recursively freeze.
- * @returns {Object} The given object, frozen, with every child object also frozen.
+ * @param {object} object The object to recursively freeze.
+ * @returns {object} The given object, frozen, with every child object also frozen.
  */
 export function deepFreeze(object) {
     if (typeof object === "object" && object) {
@@ -20,11 +20,11 @@ export function deepFreeze(object) {
 /**
  * Gets the names of all properties within a given object's prototype, including inherited ones.
  * Adapted from code written by airportyh and debaaryan: https://stackoverflow.com/a/8024294.
- * @param {Object} obj An object whose prototype/s are to be scanned.
- * @param {Object} options Additional options for this operation.
- * @param {Boolean} [options.includeRootObject=false] If true, the root Object prototype will be included. By default,
+ * @param {object} obj An object whose prototype/s are to be scanned.
+ * @param {object} options Additional options for this operation.
+ * @param {boolean} [options.includeRootObject=false] If true, the root Object prototype will be included. By default,
  *        it will be excluded.
- * @returns {Array<String>} The names of all of the properties found within the prototype chain of the given object.
+ * @returns {string[]} The names of all of the properties found within the prototype chain of the given object.
  */
 export function getAllPropertyNames(obj, options = {}) {
     if (!options.hasOwnProperty("includeRootObject")) {

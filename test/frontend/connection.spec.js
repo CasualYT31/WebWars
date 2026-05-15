@@ -16,45 +16,45 @@ import {
  * Perform connection tests.
  * @param {import("@playwright/test").BrowserContext} context The browser the game is running in.
  * @param {import("@playwright/test").Page} page The page the game is running in.
- * @param {Number} port The port the server is running on.
- * @param {Object} options The options configuring what actions to perform and what tests to run.
- * @param {Boolean} [options.expectConnection=true] If false, this function will expect the WebSocket created by the
+ * @param {number} port The port the server is running on.
+ * @param {object} options The options configuring what actions to perform and what tests to run.
+ * @param {boolean} [options.expectConnection=true] If false, this function will expect the WebSocket created by the
  *        client to be closed by the end of the call, and that the disconnected overlay is visible. If true, the
  *        WebSocket must not be closed and the disconnected overlay must be hidden. If false, any cached session key's
  *        expiration date will also not be tested, as it is expected that its expiration date will not be updated by the
  *        client if it can't verify it with the server.
- * @param {Boolean} [options.reload=false] If false, the given page will be navigated to http://localhost:${port}. If
+ * @param {boolean} [options.reload=false] If false, the given page will be navigated to http://localhost:${port}. If
  *        true, the page will instead be reloaded.
- * @param {Boolean} [options.noNavigation=false] If true, the page won't be reloaded or navigated to.
- * @param {String} [options.expectConnectionFlag="onInitialConnection"] If expectConnection is true, this string stores
+ * @param {boolean} [options.noNavigation=false] If true, the page won't be reloaded or navigated to.
+ * @param {string} [options.expectConnectionFlag="onInitialConnection"] If expectConnection is true, this string stores
  *        the name of the window.WebWars flag to wait for. The flag will be set to true by the map pack once the client
  *        has fully connected. Must be one of "onInitialConnection" and "onReconnection".
- * @param {String} [options.expectWebSocketSessionKey=""] If given, the opened WebSocket's URL will be expected to
+ * @param {string} [options.expectWebSocketSessionKey=""] If given, the opened WebSocket's URL will be expected to
  *        include this session key. If a blank string is given, the WebSocket's URL must not contain a session key. Pass
  *        undefined to exclude this test.
- * @param {String} [options.expectSessionKey=""] If given, the session key given by the server is expected to be this.
- * @param {Boolean} [options.expectNoSessionKey=false] If true, no session key is expected to be cached within the
+ * @param {string} [options.expectSessionKey=""] If given, the session key given by the server is expected to be this.
+ * @param {boolean} [options.expectNoSessionKey=false] If true, no session key is expected to be cached within the
  *        browser context's cookies. Overrides the expectSessionKey option.
- * @param {Boolean} [options.expectSameGameEngineInstance=true] When run with the expectConnection option set to true,
+ * @param {boolean} [options.expectSameGameEngineInstance=true] When run with the expectConnection option set to true,
  *        this function caches a reference to the game engine instance within window.WebWars. If this function is
  *        executed again in the same test with the same expectConnection flag, and window.WebWars still holds a
  *        reference to the game engine, it will be tested. By default, these tests assume that the game engine instance
  *        cached from the first call is the same as the instance that can be found in the controller in the second call.
  *        Set this to false to expect that they're different instances.
- * @param {Array<String>} [options.expectScenes=["Pack1"]] A list of scenes that are expected to be in the game engine,
+ * @param {string[]} [options.expectScenes=["Pack1"]] A list of scenes that are expected to be in the game engine,
  *        if expectConnection is true.
- * @param {String} [options.expectMapFileToEndWith="test.map"] If expectConnection is true, expect the one and only map
+ * @param {string} [options.expectMapFileToEndWith="test.map"] If expectConnection is true, expect the one and only map
  *        file in the maps model to end with this string.
- * @param {String} [options.expectReactMessage="Hello, World"] If expectConnection is true, the map pack's React message
+ * @param {string} [options.expectReactMessage="Hello, World"] If expectConnection is true, the map pack's React message
  *        component must be visible and must contain this text.
- * @param {String} [options.expectMapPackModel="TestModel"] Either "TestModel" or "TestModel2" depending on which map
+ * @param {string} [options.expectMapPackModel="TestModel"] Either "TestModel" or "TestModel2" depending on which map
  *        pack you're expecting. Both must never exist at the same time.
- * @param {String} [options.expectDisconnectedMessage=""] If given, the disconnected overlay's message must contain this
+ * @param {string} [options.expectDisconnectedMessage=""] If given, the disconnected overlay's message must contain this
  *        text, and the expectConnection option will always be set to false.
- * @param {Boolean} options.expectWebSocketToClose If you expect the websocket to close by the end of the call, set this
+ * @param {boolean} options.expectWebSocketToClose If you expect the websocket to close by the end of the call, set this
  *        to true. If you expect it to remain open, set this to false. If not given, it will default to the inverse of
  *        options.expectConnection.
- * @returns {Promise<String | undefined>} The session key given by the server and cached in the browser context's
+ * @returns {Promise<string | undefined>} The session key given by the server and cached in the browser context's
  *          cookies, or undefined if none was received or cached.
  */
 async function connectAndTest(context, page, port, options = {}) {
@@ -306,8 +306,8 @@ test.describe("Successful connection", () => {
      * Perform connection tests as in performConnectionTests(), but with a given session key on initialization.
      * @param {import("@playwright/test").BrowserContext} context The browser the game is running in.
      * @param {import("@playwright/test").Page} page The page the game is running in.
-     * @param {Number} port The port the server is running on.
-     * @param {String} sessionKey The session key to initialize the browser with, if any.
+     * @param {number} port The port the server is running on.
+     * @param {string} sessionKey The session key to initialize the browser with, if any.
      */
     async function performConnectionTests(context, page, port, sessionKey = "") {
         if (sessionKey) {
@@ -454,10 +454,10 @@ test.describe("Failed connection", () => {
  * Invokes connectAndTest(), expecting a reconnection rather than a subsequent connection.
  * @param {import("@playwright/test").BrowserContext} context The context the game is running within.
  * @param {import("@playwright/test").Page} page The page the game is running within.
- * @param {Number} port The port the server is running on.
- * @param {String} sessionKey The session key that the client is expected to be using.
- * @param {Object} extraOptions Additional options to spread over the default options given to connectAndTest().
- * @returns {Promise<String | undefined>} The result of the connectAndTest() call.
+ * @param {number} port The port the server is running on.
+ * @param {string} sessionKey The session key that the client is expected to be using.
+ * @param {object} extraOptions Additional options to spread over the default options given to connectAndTest().
+ * @returns {Promise<string | undefined>} The result of the connectAndTest() call.
  */
 async function expectReconnection(context, page, port, sessionKey, extraOptions) {
     return await connectAndTest(context, page, port, {

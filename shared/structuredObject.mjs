@@ -11,9 +11,9 @@ import { deepFreeze } from "./utils.mjs";
 export default class StructuredObject {
     /**
      * Constructs a new structured object.
-     * @param {Object} structure Defines the structure of the object.
-     * @param {Object} data The data to initialize the object with.
-     * @param {...String} events An arbitrary list of events that caused the creation of this structured object.
+     * @param {object} structure Defines the structure of the object.
+     * @param {object} data The data to initialize the object with.
+     * @param {...string} events An arbitrary list of events that caused the creation of this structured object.
      *        Optional.
      */
     constructor(structure, data, ...events) {
@@ -24,7 +24,7 @@ export default class StructuredObject {
 
     /**
      * Grants read-only access to the underlying object structure.
-     * @returns {Object} Read-only reference to this object's structure.
+     * @returns {object} Read-only reference to this object's structure.
      */
     get structure() {
         return this.#structure;
@@ -32,7 +32,7 @@ export default class StructuredObject {
 
     /**
      * Grants read-only access to the underlying data object.
-     * @returns {Object} Read-only reference to this object's data.
+     * @returns {object} Read-only reference to this object's data.
      */
     get data() {
         return this.#data;
@@ -41,7 +41,7 @@ export default class StructuredObject {
     /**
      * Retrieves the initial event list given to this object at construction.
      * Can be used to recall what events caused the construction of this structured object.
-     * @returns {Array<String>} Read-only reference to this object's events list.
+     * @returns {string[]} Read-only reference to this object's events list.
      */
     get eventsGivenAtConstruction() {
         return this.#events;
@@ -106,7 +106,7 @@ export default class StructuredObject {
      * }
      * Because the inner "object" is spread separately, whilst the rest of the properties in the root data object still
      * have the same spreading behavior as can be seen in the first example.
-     * @param {Object} updates A partial update to apply to this object's data, or completely new data to apply to the
+     * @param {object} updates A partial update to apply to this object's data, or completely new data to apply to the
      *        object that maintains the previously configured structure.
      */
     update(updates) {
@@ -121,11 +121,11 @@ export default class StructuredObject {
 
     /**
      * Applies updates to a given data object recursively according to its defined structure.
-     * @param {Object} data The data object to update.
-     * @param {Object} updates The updates to apply to the data object.
-     * @param {Object} structure Are there any inner objects which must be updated individually? If so, define them in
+     * @param {object} data The data object to update.
+     * @param {object} updates The updates to apply to the data object.
+     * @param {object} structure Are there any inner objects which must be updated individually? If so, define them in
      *        this structure object.
-     * @returns {Object} The updated data object.
+     * @returns {object} The updated data object.
      */
     #update(data, updates, structure) {
         // First, iterate through the known structure of the data and individually spread those inner objects, if they
